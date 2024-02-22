@@ -1,6 +1,7 @@
 Just a little checklist to help me remember what to do. Up to date as of (Feb. 22, 2024).
 
 ### Adding a new mod
+
 * Add gradle dependency (in `dependencies {...}`)
 * Obtain deobfuscated mod for use as library (either through supplied dev version or using BON2)
 * Place deobfuscated mod in lib/, add as library, and add mod to classpath
@@ -10,6 +11,7 @@ Just a little checklist to help me remember what to do. Up to date as of (Feb. 2
 * Add mod as optional dependency in main dependency string
 
 ### Adding a new moduleInfo
+
 * Ensure the requisite mods are added as per the above section.
 * Decide on a name, `modulename`, for the moduleInfo.
 * Add a package `modulename` under `modules` for the moduleInfo-specific code.

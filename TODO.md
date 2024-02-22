@@ -1,5 +1,7 @@
-#TODO
-##General
+# TODO
+
+## General
+
 * Change Module/ModuleManager so we can handle client/server-specific functionality for modules.
 * Some way to automatically test this mod with different runtime mod environments (e.g. automatically
   enabling only specific mods) - at the very least, I should be able to specify the runtime environment/mod set
@@ -18,18 +20,21 @@
     set it in one place.
 * Transfer ActuallyAdditions and RangedPumps modules to the new FixModule/ModuleEntry/ModuleManager structure.
 
-##Mod-Specific
-###Actually Additions
+## Mod-Specific
+
+### Actually Additions
+
 * Vertical Digger:
   * Make absolute/relative mining depth configurable
   * Display an individual digger's final mining depth
   * Maybe add an option to set an individual digger's stop depth in its GUI?
 * Get worldgen working properly with cubic worlds.
 
-###Ranged Pumps
+### Ranged Pumps
 * Make absolute/relative pumping depth configurable.
 
-###Worley's Caves
+### Worley's Caves
+
 * Add separate config options that control how it generates in cubic worlds
   * Also, add a config option to control if it uses the Worley's Caves config, or this mod's configs
     where relevant.

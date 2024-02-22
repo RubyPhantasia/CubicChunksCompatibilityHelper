@@ -1,4 +1,4 @@
-##Cubic Chunks Compatibility Helper Mod
+## Cubic Chunks Compatibility Helper Mod
 
 A mod that tweaks other mods to make them what I call "properly compatible" with Cubic Chunks 1.12.2 - so
 they not only work without crashing, but work as one might reasonably expect in a Cubic Chunks world.
@@ -8,7 +8,7 @@ cubic world generator is used (e.g. [Cubic World Generator](https://github.com/O
 This mod is in a pretty early state, and while the features I've implemented should be fairly well-tested,
 they are not always complete, or fully configurable.
 
-###Setting up this mod in Dev (INCOMPLETE)
+### Setting up this mod in Dev (INCOMPLETE)
 
 This guide is written for Intellij IDEA, as that is what I use (Community Edition version 2021.2.1, to be exact); if someone could provide equivalent steps
   for Eclipse or other IDEs, that would be appreciated.
@@ -51,7 +51,7 @@ E.g.:
       * This is not required unless the mod (otherMod) is required in the dependency string; this is mostly if you want
         to see how this mod (compatMod) operates with the otherMod in its runtime environment.
 
-####Notes:
+#### Notes:
 
 * For running the project, you need to use the IntelliJ runClient/runServer configurations (in the
   dropdown next to the run/debug buttons on a fresh install of Intellij IDEA).
