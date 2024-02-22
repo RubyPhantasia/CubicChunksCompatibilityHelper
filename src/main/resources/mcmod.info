@@ -1,0 +1,16 @@
+[
+{
+  "modid": "cubic_chunks_compatibility_helper",
+  "name": "Cubic Chunks Compatability Helper",
+  "description": "Tweaks other mods to improve their compatability with Cubic Chunks",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["author"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
