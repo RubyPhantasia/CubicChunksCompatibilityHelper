@@ -8,6 +8,8 @@ cubic world generator is used (e.g. [Cubic World Generator](https://github.com/O
 This mod is in a pretty early state, and while the features I've implemented should be fairly well-tested,
 they are not always complete, or fully configurable.
 
+---
+
 ### Setting up this mod in Dev (INCOMPLETE)
 
 This guide is written for Intellij IDEA, as that is what I use (Community Edition version 2021.2.1, to be exact); if someone could provide equivalent steps
