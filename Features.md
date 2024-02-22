@@ -7,7 +7,7 @@
 
 ### Ranged Pumps
 
-* Ender pump now pumps across y=0, and pumps down to a max depth below it - up to M blocks below
+* Pump now pumps across y=0, and pumps down to a max depth below it - up to M blocks below
   the pump itself, or y=N, whichever is shallower (higher in the world).
 
 ### Worley's Caves
