@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Queue;
 
-@Mixin(TilePump.class)
+@Mixin(value=TilePump.class, remap=false)
 public abstract class Mixin_TilePump_Deeper extends TileEntity {
     private final int MAX_RELATIVE_DEPTH = 300;
     private final int MAX_ABSOLUTE_DEPTH = -10000;

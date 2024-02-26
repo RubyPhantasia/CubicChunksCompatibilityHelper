@@ -107,10 +107,9 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
     // Mods to improve CubicChunks compatibility with.
-    compileOnly(files("lib/ActuallyAdditions-1.12.2-r148-deobf.jar"))
-    compileOnly(files("lib/rangedpumps-0.5-deobf.jar"))
-    compileOnly(files("lib/Scannable-MC1.12.2-1.6.3.24-deobf.jar"))
-    compileOnly(files("lib/worleycaves-1.4.1-deobf.jar"))
+    compileOnly(files("libs/ActuallyAdditions-1.12.2-r148-deobf.jar"))
+    compileOnly(files("libs/rangedpumps-0.5-deobf.jar"))
+    compileOnly(files("libs/worleycaves-1.4.1-deobf.jar"))
 //    implementation 'io.github.opencubicchunks:cubicworldgen:1.12.2-SNAPSHOT'
 
     // Mixin stuff:

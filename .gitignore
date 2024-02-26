@@ -16,14 +16,14 @@ out/
 # gradle
 build/
 .gradle/
-gradle/
 
 # other
 eclipse
 run/
 classes/
-lib/*
+libs/*
 source/*
 
 *.bat
 !gradlew.bat
+*.jar
