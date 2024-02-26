@@ -40,3 +40,5 @@
   * Also, add a config option to control if it uses the Worley's Caves config, or this mod's configs
     where relevant.
 * Handle the Hybrid world generator (https://github.com/Barteks2x/HybridWorld) properly.
+* Random breaks in the caves - where the tendrils that form them break.
+* Ability for Worley's caves nodes (where tendrils join) to connect to Vanilla spaghetti caves.

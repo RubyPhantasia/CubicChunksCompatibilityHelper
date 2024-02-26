@@ -10,6 +10,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -45,6 +47,16 @@ public class Mod_CubicChunksCompatibilityHelper
         proxy.init(event);
     }
 
+    @EventHandler
+    public void postInit(FMLPostInitializationEvent event) {
+        proxy.postInit(event);
+    }
+
+    @EventHandler
+    public void postLoad(FMLLoadCompleteEvent event) {
+        proxy.postLoad(event);
+    }
+
     @SubscribeEvent
     public void registerBlocks(RegistryEvent.Register<Block> event)
     {
@@ -62,5 +74,4 @@ public class Mod_CubicChunksCompatibilityHelper
     {
         proxy.registerModels(event);
     }
-
 }

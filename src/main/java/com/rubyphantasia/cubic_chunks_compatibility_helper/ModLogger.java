@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class ModLogger {
-
     private static Logger logger = LogManager.getLogger(ModInfo.NAME);
 
     public static void info(String message) {

@@ -2,6 +2,8 @@ package com.rubyphantasia.cubic_chunks_compatibility_helper.modules;
 
 import com.rubyphantasia.cubic_chunks_compatibility_helper.ModInfo;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.ModLogger;
+import net.minecraftforge.common.config.Config;
+import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.common.Loader;
 
 import java.util.ArrayList;
@@ -17,7 +19,7 @@ public class ModuleManager {
     public void setupModules() {
         if (!setUp) {
             for (ModuleInfo moduleInfo : ModuleInfo.values()) {
-                if (moduleInfo.areRequiredModsLoaded()) {
+                if (moduleInfo.shouldLoad()) {
                     ModLogger.info("Attempting to load module "+ moduleInfo +".");
                     try {
                         Class moduleClass = Loader.instance().getModClassLoader().loadClass(MODULE_MASTER_PACKAGE+"."+ moduleInfo.moduleClassPath);
@@ -45,8 +47,10 @@ public class ModuleManager {
      * @return
      */
     public static List<String> getModuleMixinConfigs() {
+        // Manually synchronize the config, as configs have not been synchronized w/ the disk yet when ILateMixinLoader is calling this.
+        ConfigManager.sync(ModInfo.MODID, Config.Type.INSTANCE);
         return Arrays.stream(ModuleInfo.values())
-                .filter(ModuleInfo::areRequiredModsLoaded)
+                .filter(ModuleInfo::shouldLoad)
                 .map(moduleInfo -> moduleInfo.mixinConfig)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());

@@ -1,12 +1,17 @@
 package com.rubyphantasia.cubic_chunks_compatibility_helper.proxy;
 
+import com.rubyphantasia.cubic_chunks_compatibility_helper.ModInfo;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.ModLogger;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.modules.ModuleManager;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.common.config.Config;
+import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 public class CommonProxy {
@@ -27,7 +32,12 @@ public class CommonProxy {
 
     public void init(FMLInitializationEvent event)
     {
+    }
 
+    public void postInit(FMLPostInitializationEvent event) {
+    }
+
+    public void postLoad(FMLLoadCompleteEvent event) {
     }
 
     public void registerBlocks(RegistryEvent.Register<Block> event)
