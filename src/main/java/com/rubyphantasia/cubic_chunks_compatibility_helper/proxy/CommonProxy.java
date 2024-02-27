@@ -15,7 +15,6 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 public class CommonProxy {
-    ModuleManager moduleManager = new ModuleManager();
     public void registerItemRenderer(Item item, int meta, String id)
     {
 
@@ -26,8 +25,8 @@ public class CommonProxy {
         ModLogger.info("CommonProxy#preInit");
         // some example code
 //        Mod_CubicChunksCompatibilityHelper.info(String.format("DIRT BLOCK >> {}", Blocks.DIRT.getRegistryName()));
-        moduleManager.setupModules();
-        moduleManager.runModulesPreInit();
+        ModuleManager.getInstance().setupModules();
+        ModuleManager.getInstance().runModulesPreInit();
     }
 
     public void init(FMLInitializationEvent event)

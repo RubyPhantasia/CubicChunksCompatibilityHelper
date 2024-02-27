@@ -2,7 +2,8 @@ package com.rubyphantasia.cubic_chunks_compatibility_helper.modules;
 
 public enum DependencyMod {
     WorleyCaves("worleycaves"),
-    Pineapple("pineapple"),
+    ActuallyAdditions("actuallyadditions"),
+    RangedPumps("rangedpumps"),
     ;
     public final String modid;
 

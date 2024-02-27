@@ -1,7 +1,6 @@
-package com.rubyphantasia.cubic_chunks_compatibility_helper.core.mixins.actuallyadditions;
+package com.rubyphantasia.cubic_chunks_compatibility_helper.modules.actuallyadditionsdigger.mixin;
 
-import com.rubyphantasia.cubic_chunks_compatibility_helper.Mod_CubicChunksCompatibilityHelper;
-import com.rubyphantasia.cubic_chunks_compatibility_helper.core.interfaces.actuallyadditions.ITileMiner_Deeper;
+import com.rubyphantasia.cubic_chunks_compatibility_helper.modules.actuallyadditionsdigger.interfaces.ITileMiner_Deeper;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.util.Miscellaneous;
 import de.ellpeck.actuallyadditions.mod.tile.TileEntityInventoryBase;
 import de.ellpeck.actuallyadditions.mod.tile.TileEntityMiner;
@@ -13,7 +12,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static com.rubyphantasia.cubic_chunks_compatibility_helper.core.constants.actuallyadditions.Constants_Miner_Deeper.*;
+import static com.rubyphantasia.cubic_chunks_compatibility_helper.modules.actuallyadditionsdigger.constants.Constants_Miner_Deeper.*;
 
 @Mixin(value=TileEntityMiner.class, remap=false)
 public abstract class Mixin_TileMiner_Deeper extends TileEntityInventoryBase implements ITileMiner_Deeper {

@@ -5,14 +5,15 @@ import net.minecraftforge.fml.common.Loader;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 public enum ModuleInfo {
-    WORLEYCAVES("worleycaves.WorleyCavesFixModule", "mixins.worleycaves.json",
-            Collections.singleton(DependencyMod.WorleyCaves), "Should Worley's Caves be adjusted to also generate below y=0 in Cubic Worlds."),
-    PINEAPPLE("", "", Collections.singleton(DependencyMod.Pineapple), false, "Pineapple");
+    WORLEYCAVES("worleycaves.FixModuleWorleyCaves", "mixins.worleycaves.json",
+            DependencyMod.WorleyCaves, "Should Worley's Caves be patched to also generate below y=0 in Cubic Worlds."),
+    ACTUALLY_ADDITIONS_DIGGER("actuallyadditionsdigger.FixModuleActuallyAdditionsDigger", "mixins.actuallyadditionsdigger.json",
+            DependencyMod.ActuallyAdditions, "Should Actually Additions' Vertical Digger be patched to mine through y=0."),
+    RANGED_PUMPS("rangedpumps.FixModuleRangedPumps", "mixins.rangedpumps.json", DependencyMod.RangedPumps,
+                 "Should Ranged Pumps' Pump be patched to pump through y=0."),
     ;
 
     public final String moduleClassPath;
@@ -23,6 +24,8 @@ public enum ModuleInfo {
 
     public final boolean defaultEnabled;
     public final String configDescription;
+
+    private static final Map<String, ModuleInfo> mixinReverseMap = new HashMap<>();
 
     ModuleInfo(String moduleClassPath, @Nonnull String mixinConfig, @Nullable Set<DependencyMod> requiredMods,
                boolean defaultEnabled, String configDescription) {
@@ -38,6 +41,15 @@ public enum ModuleInfo {
         this.moduleClassPath = moduleClassPath;
         this.mixinConfig = mixinConfig;
         this.requiredMods = requiredMods;
+        this.defaultEnabled = true;
+        this.configDescription = configDescription;
+    }
+
+    ModuleInfo(String moduleClassPath, @Nonnull String mixinConfig,
+               @Nullable DependencyMod requiredMod, String configDescription) {
+        this.moduleClassPath = moduleClassPath;
+        this.mixinConfig = mixinConfig;
+        this.requiredMods = Collections.singleton(requiredMod);
         this.defaultEnabled = true;
         this.configDescription = configDescription;
     }
@@ -67,5 +79,15 @@ public enum ModuleInfo {
 
     public String getLowerName() {
         return name().toLowerCase(Locale.ROOT);
+    }
+
+    public static ModuleInfo lookupModuleByMixinConfig(String mixinConfig) {
+        return mixinReverseMap.get(mixinConfig);
+    }
+
+    static {
+        for (ModuleInfo moduleInfo : values()) {
+            mixinReverseMap.put(moduleInfo.mixinConfig, moduleInfo);
+        }
     }
 }

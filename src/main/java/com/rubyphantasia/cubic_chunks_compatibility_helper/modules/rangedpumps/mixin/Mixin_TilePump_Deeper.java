@@ -1,20 +1,16 @@
-package com.rubyphantasia.cubic_chunks_compatibility_helper.core.mixins.rangedpumps;
+package com.rubyphantasia.cubic_chunks_compatibility_helper.modules.rangedpumps.mixin;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.raoulvdberge.rangedpumps.tile.TilePump;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.util.Miscellaneous;
 import io.github.opencubicchunks.cubicchunks.api.world.IMinMaxHeight;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.Queue;
 
 @Mixin(TilePump.class)
 public abstract class Mixin_TilePump_Deeper extends TileEntity {

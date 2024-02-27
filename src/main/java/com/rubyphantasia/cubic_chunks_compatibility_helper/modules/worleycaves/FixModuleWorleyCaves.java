@@ -5,8 +5,8 @@ import com.rubyphantasia.cubic_chunks_compatibility_helper.modules.IFixModule;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.modules.worleycaves.event.CubicCaveEventHandler;
 import net.minecraftforge.common.MinecraftForge;
 
-public class WorleyCavesFixModule implements IFixModule {
-    public WorleyCavesFixModule() {}
+public class FixModuleWorleyCaves implements IFixModule {
+    public FixModuleWorleyCaves() {}
 
     @Override
     public void setupModule() {

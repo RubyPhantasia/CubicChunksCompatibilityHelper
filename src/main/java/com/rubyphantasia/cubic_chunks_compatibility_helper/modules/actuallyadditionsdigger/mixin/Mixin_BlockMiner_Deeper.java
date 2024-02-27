@@ -1,7 +1,7 @@
-package com.rubyphantasia.cubic_chunks_compatibility_helper.core.mixins.actuallyadditions;
+package com.rubyphantasia.cubic_chunks_compatibility_helper.modules.actuallyadditionsdigger.mixin;
 
-import com.rubyphantasia.cubic_chunks_compatibility_helper.core.constants.actuallyadditions.Constants_Miner_Deeper;
-import com.rubyphantasia.cubic_chunks_compatibility_helper.core.interfaces.actuallyadditions.ITileMiner_Deeper;
+import com.rubyphantasia.cubic_chunks_compatibility_helper.modules.actuallyadditionsdigger.constants.Constants_Miner_Deeper;
+import com.rubyphantasia.cubic_chunks_compatibility_helper.modules.actuallyadditionsdigger.interfaces.ITileMiner_Deeper;
 import de.ellpeck.actuallyadditions.mod.blocks.BlockMiner;
 import de.ellpeck.actuallyadditions.mod.tile.TileEntityMiner;
 import org.objectweb.asm.Opcodes;

@@ -14,18 +14,14 @@ public class LateMixinLoader implements ILateMixinLoader {
     public List<String> getMixinConfigs() {
         ModLogger.info("Identifying mixins to apply.");
         List<String> mixinsToApply = new ArrayList<>();
-        for (MixinConfig mixinConfig : MixinConfig.values()) {
-            mixinsToApply.add(mixinConfig.mixinConfigFileName);
-        }
-        ModLogger.info("Proxy: "+Mod_CubicChunksCompatibilityHelper.proxy);
         // This is gross, is there a better way to do this?
-        mixinsToApply.addAll(ModuleManager.getModuleMixinConfigs());
+        mixinsToApply.addAll(ModuleManager.getInstance().getModuleMixinConfigs());
         return mixinsToApply;
     }
 
     @Override
     public boolean shouldMixinConfigQueue(String mixinConfig) {
-        return MixinConfig.shouldLoad(mixinConfig);
+        return ModuleManager.getInstance().shouldMixinConfigLoad(mixinConfig);
     }
 
 }

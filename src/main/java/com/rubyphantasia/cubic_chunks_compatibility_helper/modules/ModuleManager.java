@@ -2,20 +2,26 @@ package com.rubyphantasia.cubic_chunks_compatibility_helper.modules;
 
 import com.rubyphantasia.cubic_chunks_compatibility_helper.ModInfo;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.ModLogger;
+import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.common.Loader;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ModuleManager {
     private List<IFixModule> loadedModules = new ArrayList<>();
     private boolean setUp = false;
-    private static final String MODULE_MASTER_PACKAGE = ModInfo.packageName+".modules";
+    private final String MODULE_MASTER_PACKAGE = ModInfo.packageName+".modules";
+    private static final ModuleManager instance = new ModuleManager();
+
+    private ModuleManager() {}
+
+    public static ModuleManager getInstance() {
+        return instance;
+    }
+
     public void setupModules() {
         if (!setUp) {
             for (ModuleInfo moduleInfo : ModuleInfo.values()) {
@@ -46,7 +52,7 @@ public class ModuleManager {
      * Called by LateMixinLoader#getMixinConfigs; is there a better way to handle this? Maybe integrating ModuleManager into LateMixinLoader?
      * @return
      */
-    public static List<String> getModuleMixinConfigs() {
+    public List<String> getModuleMixinConfigs() {
         // Manually synchronize the config, as configs have not been synchronized w/ the disk yet when ILateMixinLoader is calling this.
         ConfigManager.sync(ModInfo.MODID, Config.Type.INSTANCE);
         return Arrays.stream(ModuleInfo.values())
@@ -64,5 +70,10 @@ public class ModuleManager {
                 loadedModule.preInit();
             }
         }
+    }
+
+    public boolean shouldMixinConfigLoad(String mixinConfig) {
+        ConfigManager.sync(ModInfo.MODID, Config.Type.INSTANCE);
+        return ModuleInfo.lookupModuleByMixinConfig(mixinConfig).shouldLoad();
     }
 }
