@@ -8,7 +8,7 @@
   in gradle, without having to remove mods or append `.disabled` to their filenames.
 * Maybe separate the ModuleManager framework out into a separate library, or add a way for other mods
   add modules to this?
-* Add a config file - possibly procedurally generated from a set of config options for each module?
+* [DONE] Add a config file - possibly procedurally generated from a set of config options for each module?
 * Some kind of compatibility tracker, that logs whether specific mods are known to be compatible with
   Cubic Chunks, and the degree of that compatibility. Could also note if there are specific variants
   of those mods modified to work with Cubic Chunks.
@@ -18,7 +18,18 @@
 * Fix up gradle buildscript so it automagically generates fills out the mcmodinfo with the correct information
   * Ideally, it should fill out the modid, mod name, etc. everywhere, even the main mod class, so I only have
     set it in one place.
-* Transfer ActuallyAdditions and RangedPumps modules to the new FixModule/ModuleEntry/ModuleManager structure.
+* [DONE] Transfer ActuallyAdditions and RangedPumps modules to the new FixModule/ModuleEntry/ModuleManager structure.
+* Update dev environment setup instructions with my experiences on Kubuntu.
+* Update my AddingNewMods.md?
+* Move dev environment setup instructions into a separate file.
+* Link to all the relevant files from my README.md
+* Add TESTING.md
+* Maybe move all my info files (Credits.md, AddingNewMods.md, etc.), except for a few major ones (e.g. README.md), to
+  a folder?
+* See about using LangKeys for the config comments?
+* Go through and add comments where needed.
+* Note in the config file that to disable a module, they need to type "false" _exactly_ - any other string
+  will count as "true", even "fals".
 
 ## Mod-Specific
 
@@ -33,6 +44,7 @@
 ### Ranged Pumps
 
 * Make absolute/relative pumping depth configurable.
+* Some kind of option to set an individual pump's max depth in its GUI?
 
 ### Worley's Caves
 
@@ -42,3 +54,5 @@
 * Handle the Hybrid world generator (https://github.com/Barteks2x/HybridWorld) properly.
 * Random breaks in the caves - where the tendrils that form them break.
 * Ability for Worley's caves nodes (where tendrils join) to connect to Vanilla spaghetti caves.
+* Ability to have layers where Worley's Caves generates?
+* See why the caves seem to roughly generate in two-block-high steps.
