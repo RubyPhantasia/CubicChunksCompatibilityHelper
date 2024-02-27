@@ -1,6 +1,6 @@
 package com.rubyphantasia.cubic_chunks_compatibility_helper.proxy;
 
-import com.rubyphantasia.cubic_chunks_compatibility_helper.Mod_CubicChunksCompatibilityHelper;
+import com.rubyphantasia.cubic_chunks_compatibility_helper.ModLogger;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.modules.ModuleManager;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -8,8 +8,6 @@ import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-
-import java.util.List;
 
 public class CommonProxy {
     ModuleManager moduleManager = new ModuleManager();
@@ -20,7 +18,7 @@ public class CommonProxy {
 
     public void preInit(FMLPreInitializationEvent event)
     {
-        Mod_CubicChunksCompatibilityHelper.info("CommonProxy#preInit");
+        ModLogger.info("CommonProxy#preInit");
         // some example code
 //        Mod_CubicChunksCompatibilityHelper.info(String.format("DIRT BLOCK >> {}", Blocks.DIRT.getRegistryName()));
         moduleManager.setupModules();

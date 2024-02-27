@@ -12,10 +12,8 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-@Mod(modid = Mod_CubicChunksCompatibilityHelper.MODID, name = Mod_CubicChunksCompatibilityHelper.NAME, version = Mod_CubicChunksCompatibilityHelper.VERSION,
+@Mod(modid = ModInfo.MODID, name = ModInfo.NAME, version = ModInfo.VERSION,
 dependencies = "required-after:cubicchunks@[0.0.1271.0,);"
                 + "required-after:mixinbooter@[9.1,);"
                 + "after:actuallyadditions@[r148,);"
@@ -23,17 +21,10 @@ dependencies = "required-after:cubicchunks@[0.0.1271.0,);"
                 + "after:worleycaves@[1.4.1,);")
 public class Mod_CubicChunksCompatibilityHelper
 {
-    public static final String MODID = "cubic_chunks_compatibility_helper";
-    public static final String NAME = "Cubic Chunks Compatibility Helper";
-    public static final String VERSION = "0.0.1";
-    public static final String packageName = "com.rubyphantasia.cubic_chunks_compatibility_helper";
-
-    private static Logger logger = LogManager.getLogger(NAME);
-
     @Mod.Instance
     public static Mod_CubicChunksCompatibilityHelper instance;
 
-    @SidedProxy (clientSide=packageName+".proxy.ClientProxy", serverSide=packageName+".proxy.CommonProxy")
+    @SidedProxy (clientSide= ModInfo.packageName+".proxy.ClientProxy", serverSide= ModInfo.packageName+".proxy.CommonProxy")
     public static CommonProxy proxy;
 
     public Mod_CubicChunksCompatibilityHelper()
@@ -72,23 +63,4 @@ public class Mod_CubicChunksCompatibilityHelper
         proxy.registerModels(event);
     }
 
-    public static void info(String message) {
-        logger.info(message);
-    }
-
-    public static void debug(String message) {
-        logger.debug(message);
-    }
-
-    public static void error(String message) {
-        logger.error(message);
-    }
-
-    public static void fatal(String message) {
-        logger.fatal(message);
-    }
-
-    public static void warn(String message) {
-        logger.warn(message);
-    }
 }

@@ -1,10 +1,9 @@
 package com.rubyphantasia.cubic_chunks_compatibility_helper.modules.worleycaves.event;
 
-import com.rubyphantasia.cubic_chunks_compatibility_helper.Mod_CubicChunksCompatibilityHelper;
+import com.rubyphantasia.cubic_chunks_compatibility_helper.ModLogger;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.modules.worleycaves.world.CubicWorleyCaveGenerator;
 import fluke.worleycaves.config.Configs;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.event.InitCubicStructureGeneratorEvent;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.terraingen.InitMapGenEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -13,7 +12,7 @@ public class CubicCaveEventHandler {
 
     @SubscribeEvent
     public void structureEvent(InitCubicStructureGeneratorEvent event) {
-        Mod_CubicChunksCompatibilityHelper.info("Received event: "+event);
+        ModLogger.info("Received event: "+event);
         if (event.getType() == InitMapGenEvent.EventType.CAVE) {
             // FIXME it seems a provider's dimensionID can be set at any time - could that be a problem?
             //  If it is, I might have to do things the way Worley's Caves does it, where I check the dimensionID
@@ -27,7 +26,7 @@ public class CubicCaveEventHandler {
                     return;
                 }
             }
-            Mod_CubicChunksCompatibilityHelper.info("Registering CubicWorleyCaveGenerator2.");
+            ModLogger.info("Registering CubicWorleyCaveGenerator2.");
             event.setNewGen(new CubicWorleyCaveGenerator(event.getWorld()));
         }
     }

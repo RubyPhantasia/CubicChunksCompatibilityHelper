@@ -1,6 +1,7 @@
 package com.rubyphantasia.cubic_chunks_compatibility_helper.modules;
 
-import com.rubyphantasia.cubic_chunks_compatibility_helper.Mod_CubicChunksCompatibilityHelper;
+import com.rubyphantasia.cubic_chunks_compatibility_helper.ModInfo;
+import com.rubyphantasia.cubic_chunks_compatibility_helper.ModLogger;
 import net.minecraftforge.fml.common.Loader;
 
 import java.util.ArrayList;
@@ -12,25 +13,25 @@ import java.util.stream.Collectors;
 public class ModuleManager {
     private List<IFixModule> loadedModules = new ArrayList<>();
     private boolean setUp = false;
-    private static final String MODULE_MASTER_PACKAGE = Mod_CubicChunksCompatibilityHelper.packageName+".modules";
+    private static final String MODULE_MASTER_PACKAGE = ModInfo.packageName+".modules";
     public void setupModules() {
         if (!setUp) {
             for (ModuleInfo moduleInfo : ModuleInfo.values()) {
                 if (moduleInfo.areRequiredModsLoaded()) {
-                    Mod_CubicChunksCompatibilityHelper.info("Attempting to load module "+ moduleInfo +".");
+                    ModLogger.info("Attempting to load module "+ moduleInfo +".");
                     try {
                         Class moduleClass = Loader.instance().getModClassLoader().loadClass(MODULE_MASTER_PACKAGE+"."+ moduleInfo.moduleClassPath);
                         IFixModule loadedModule = (IFixModule) moduleClass.newInstance();
                         loadedModule.setupModule();
                         loadedModules.add(loadedModule);
-                        Mod_CubicChunksCompatibilityHelper.info("Loaded module "+ moduleInfo +".");
+                        ModLogger.info("Loaded module "+ moduleInfo +".");
                     } catch (ClassNotFoundException e) {
-                        Mod_CubicChunksCompatibilityHelper.warn("Couldn't load the "+ moduleInfo +" module.");
+                        ModLogger.warn("Couldn't load the "+ moduleInfo +" module.");
                     } catch (Exception e) {
-                        Mod_CubicChunksCompatibilityHelper.warn("Unknown error when trying to instantiate the module class for module "+ moduleInfo +".\n"+e);
+                        ModLogger.warn("Unknown error when trying to instantiate the module class for module "+ moduleInfo +".\n"+e);
                     }
                 } else {
-                    Mod_CubicChunksCompatibilityHelper.info("Skipping module "+ moduleInfo +".");
+                    ModLogger.info("Skipping module "+ moduleInfo +".");
                 }
             }
             setUp = true;
