@@ -7,7 +7,7 @@ import net.minecraftforge.common.config.Config;
 import java.util.HashSet;
 import java.util.Set;
 
-@Config(modid=ModInfo.MODID, name = ModInfo.MODID+"_EnabledModules")
+@Config(modid=ModInfo.MODID, name = ModInfo.MODID+"_enabledModules")
 public class ConfigEnabledModules {
 
     private static final Set<String> enabledModulesFieldNames = new HashSet<>();
