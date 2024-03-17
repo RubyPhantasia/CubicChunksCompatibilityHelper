@@ -1,5 +1,6 @@
 package com.rubyphantasia.cubic_chunks_compatibility_helper.modules.actuallyadditionsdigger.mixin;
 
+import com.rubyphantasia.cubic_chunks_compatibility_helper.config.ConfigActuallyAdditionsDigger;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.modules.actuallyadditionsdigger.interfaces.ITileMiner_Deeper;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.util.Miscellaneous;
 import de.ellpeck.actuallyadditions.mod.tile.TileEntityInventoryBase;
@@ -27,7 +28,7 @@ public abstract class Mixin_TileMiner_Deeper extends TileEntityInventoryBase imp
     }
 
     private void setMaxDepth() {
-        maxDepth = Math.max(MAX_ABSOLUTE_DEPTH, pos.getY()-MAX_RELATIVE_DEPTH);
+        maxDepth = Math.max(ConfigActuallyAdditionsDigger.deepestDiggableY, pos.getY()-ConfigActuallyAdditionsDigger.maximumRelativeDepth);
     }
 
     public boolean isDoneMining() {

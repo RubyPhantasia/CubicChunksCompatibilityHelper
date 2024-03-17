@@ -1,4 +1,4 @@
-Adding new modules
+### Adding new modules
 * Test that it runs in/out of dev
 * Test that its module-specific config generates correctly
   * Occasionally test that the general, moduleEnabled config is generating correctly
@@ -9,7 +9,7 @@ Adding new modules
 * Test that no other modules broke with it.
 * Test that saving and loading doesn't break it somehow.
 
-Transitioning all modules to the new ModuleInfo system:
+### Transitioning all modules to the new ModuleInfo system:
 * [X] Test that it runs in/out of dev
 * [X] Test that config generates correctly from scratch
   * [X] Test that config regenerates missing options?
@@ -20,7 +20,7 @@ Transitioning all modules to the new ModuleInfo system:
 * [X] Test that it works for Vanilla, Vanilla extended (Cubic Chunks: Default when creating a world),
   and cubic world generators.
 
-WorleyCaves Module Config:
+### WorleyCaves Module Config:
 * That CubicWorleyCaveGenerator::maxCaveY and other variables are set correctly based on the
   config, for several cases
   * Cases: _useModuleConfg true/false, noMaximumY/noMinimumY = true/false, lavaDepth, etc.
@@ -53,3 +53,33 @@ WorleyCaves Module Config:
 * [X] Case: noMax/noMin set to false, non-default lavaDepth and min/max caveY, no noise warping
 * [X] Case: noMax/noMin set to false, non-default lavaDepth and min/max caveY, all warping
 * [X] Case: noMax/noMin set to false, non-default lavaDepth and min/max caveY, all warping, different block for lava
+
+### Actually Additions Digger
+* [X] Case: deepestDiggableY = -4000
+  * [X] Subcase: Miner at -3995, does not dig below deepestDiggableY
+  * [X] Subcase: Miner at -3999, does not dig below deepestDiggableY
+  * [X] Subcase: Miner at -4000, does not dig at all
+  * [X] Subcase: Miner at -4005, does not dig at all
+  * [X] Subcase: Miner at -10000, does not dig at all
+  * [X] Subcase: Miner at -1, digs down
+  * [X] Subcase: Miner at 0, digs down
+  * [X] Subcase: Miner at 1, digs down across y=0
+  * [X] Subcase: Miner at 2, digs down across y=0
+* [X] Case: deepestDiggableY = -4000, maximumRelativeDepth = 5
+  * [X] Subcase: Miner at -3994, digs down five blocks
+  * [X] Subcase: Miner at -3995, digs down five blocks
+  * [X] Subcase: Miner at -3996, digs down four blocks
+  * [X] Subcase: Miner at -3999, digs down one block
+  * [X] Subcase: Miner at -4000, does not dig down at all
+  * [X] Subcase: Miner at -4001, does not dig down at all
+  * [X] Subcase: Miner at 2, digs down five blocks
+  * [X] Subcase: Miner at 1, digs down five blocks
+  * [X] Subcase: Miner at 0, digs down five blocks
+  * [X] Subcase: Miner at -1, digs down five blocks
+    * [X] Subcase: Miner resumes mining if maximumRelativeDepth is upped to 20
+* [X] Case: deepestDiggableY = -4000, maximumRelativeDepth = 20
+  * [X] Subcase: Miner at -3970, digs down twenty blocks
+    * [X] Subcase: Miner stops mining if maximumRelativeDepth is upped to 10 after it's dug over 10 blocks
+    * [X] Subcase: Miner stops mining early if deepestDiggableY is changed to -3000 after it's dug a few blocks
+  * [X] Subcase: Miner at -3990, digs down ten blocks
+    * [X] Subcase: Miner continues mining if deepestDiggableY is changed to -5000

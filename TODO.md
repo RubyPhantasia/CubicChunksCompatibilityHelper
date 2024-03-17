@@ -38,9 +38,11 @@
 ### Actually Additions
 
 * Vertical Digger:
-  * Make absolute/relative mining depth configurable
+  * [DONE] Make absolute/relative mining depth configurable
   * Display an individual digger's final mining depth
   * Maybe add an option to set an individual digger's stop depth in its GUI?
+  * Add a maxDiggableY config option
+  * Maybe add verification that ensures the digger can't dig down to its NOT_STARTED_Y_VALUE, Integer.MAX_VALUE?
 * Get worldgen working properly with cubic worlds.
 
 ### Ranged Pumps
