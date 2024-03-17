@@ -12,14 +12,14 @@ import org.spongepowered.asm.mixin.injection.*;
 public class Mixin_BlockMiner_Deeper {
     @Redirect(method="displayHud",
             at=@At(value="FIELD", opcode= Opcodes.GETFIELD, target="Lde/ellpeck/actuallyadditions/mod/tile/TileEntityMiner;checkY:I", ordinal=0))
-    public int fixDoneMining(TileEntityMiner miner) {
-        return (((ITileMiner_Deeper)((Object)miner)).isDoneMining()) ? 0 : 1;
+    public int ccch_fixDoneMining(TileEntityMiner miner) {
+        return (((ITileMiner_Deeper)((Object)miner)).ccch_isDoneMining()) ? 0 : 1;
     }
 
     @ModifyConstant(method="displayHud",
                     constant=@Constant(intValue=-1),
                     require=1)
-    public int fixCalculatingPositions(int oldConstant) {
+    public int ccch_fixCalculatingPositions(int oldConstant) {
         return Constants_Miner_Deeper.NOT_STARTED_Y_VALUE;
     }
 

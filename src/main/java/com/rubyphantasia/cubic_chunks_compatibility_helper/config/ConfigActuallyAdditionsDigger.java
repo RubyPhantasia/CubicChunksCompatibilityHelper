@@ -4,6 +4,8 @@ import com.rubyphantasia.cubic_chunks_compatibility_helper.ModInfo;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.modules.actuallyadditionsdigger.constants.Constants_Miner_Deeper;
 import net.minecraftforge.common.config.Config;
 
+@SuppressWarnings("CanBeFinal")
+@Config.RequiresWorldRestart
 @Config(modid=ModInfo.MODID, name=ModInfo.MODULE_CONFIGS_PATH_PREFIX +"actuallyadditions_digger")
 public class ConfigActuallyAdditionsDigger {
     @Config.Comment({
