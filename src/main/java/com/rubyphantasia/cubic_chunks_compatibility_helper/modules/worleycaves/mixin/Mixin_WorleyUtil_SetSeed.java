@@ -7,5 +7,5 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(WorleyUtil.class)
 public interface Mixin_WorleyUtil_SetSeed {
     @Accessor("m_seed")
-    public void setSeed(int newSeed);
+    public void ccch_setSeed(int newSeed);
 }

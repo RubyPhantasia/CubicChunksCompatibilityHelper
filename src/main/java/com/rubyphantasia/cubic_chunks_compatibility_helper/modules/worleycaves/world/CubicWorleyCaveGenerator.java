@@ -89,7 +89,7 @@ public class CubicWorleyCaveGenerator implements ICubicStructureGenerator {
     public CubicWorleyCaveGenerator(World world) {
         Random noiseSeedRandom = new Random(world.getSeed());
         this.worleyF1divF3.SetFrequency(0.016F);
-        ((Mixin_WorleyUtil_SetSeed)this.worleyF1divF3).setSeed(noiseSeedRandom.nextInt());
+        ((Mixin_WorleyUtil_SetSeed)this.worleyF1divF3).ccch_setSeed(noiseSeedRandom.nextInt());
         displacementNoisePerlinX.SetNoiseType(FastNoise.NoiseType.Perlin);
         displacementNoisePerlinX.SetFrequency(0.05F);
         displacementNoisePerlinX.SetSeed(noiseSeedRandom.nextInt());
@@ -225,13 +225,11 @@ public class CubicWorleyCaveGenerator implements ICubicStructureGenerator {
 
                         for (int subchunkLocalX = 0; subchunkLocalX < xSubchunkSize; subchunkLocalX++) {
                             int localX = subchunkLocalX + subChunkX*xSubchunkSize;
-                            int realX = Coords.localToBlock(cubePos.getX(), localX);
                             float noiseStepZ = (noiseEndZ - noiseStartZ) * oneQuarter;
                             float noiseVal = noiseStartZ;
 
                             for (int subchunkLocalZ = 0; subchunkLocalZ < zSubchunkSize; subchunkLocalZ++) {
                                 int localZ = subchunkLocalZ + subchunkZ*zSubchunkSize;
-                                int realZ = Coords.localToBlock(cubePos.getZ(), localZ);
                                 // TODO Stuff regarding depth
 
                                 float adjustedNoiseCutoff = noiseCutoff;
@@ -405,7 +403,6 @@ public class CubicWorleyCaveGenerator implements ICubicStructureGenerator {
                             noiseBasedWarpRaw *= 1-0.8F*fractionalDepth;
                         }
 
-//                        float dispAmp = warpAmplifier * warpAmplifierNoise.GetNoise((float) x, y, (float) z);
                         float dispAmp = warpAmplifier * (noiseBasedWarpRaw + depthBasedWarpRaw);
                         float xDisp = 0.0F;
                         float yDisp = 0.0F;

@@ -32,6 +32,11 @@
   will count as "true", even "fals".
   * See if there's a way to detect when the text entered for a boolean isn't "true"/"false"
 * Add the `RequiresMcRestart` annotation to entries in the main _enabledModules_ config.
+* Suppress warnings where appropriate
+  * "Unused field/method" warning for certain members (such as _explanation field in config for Actually Additions Digger module)
+  * "public is redundant for interface members"
+* Determine if the roundabout (I_SomeMixinInterface ((Object) targetInstance)) cast is necessary for using interfaces which are added to mixin-targeted classes, and suppress the warnings if necessary.
+* Change mixins to use ModifyExpressionValue and other MixinExtras injectors where needed.
 
 ## Mod-Specific
 

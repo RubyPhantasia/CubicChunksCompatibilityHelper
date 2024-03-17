@@ -83,3 +83,9 @@
     * [X] Subcase: Miner stops mining early if deepestDiggableY is changed to -3000 after it's dug a few blocks
   * [X] Subcase: Miner at -3990, digs down ten blocks
     * [X] Subcase: Miner continues mining if deepestDiggableY is changed to -5000
+
+### Worley's Caves, changing m_seed Accessor mixin
+* [X] Case: World seed 7, World type Default; WorleyUtil seed should be 1337
+* [X] Case: World seed 7, World type CWG; WorleyUtil seed should be -1156638823
+* [X] Case: World seed 42, World type CWG; WorleyUtil seed should be -1170105035
+* Want to ensure nothing has changed.
