@@ -1,8 +1,11 @@
 package com.rubyphantasia.cubic_chunks_compatibility_helper.modules.worleycaves.world;
 
 import com.google.common.base.MoreObjects;
+import com.rubyphantasia.cubic_chunks_compatibility_helper.ModLogger;
+import com.rubyphantasia.cubic_chunks_compatibility_helper.config.ConfigWorleyCaves;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.modules.worleycaves.mixin.Mixin_WorleyUtil_SetSeed;
 import fluke.worleycaves.config.Configs;
+import fluke.worleycaves.util.BlockUtil;
 import fluke.worleycaves.util.FastNoise;
 import fluke.worleycaves.util.WorleyUtil;
 import io.github.opencubicchunks.cubicchunks.api.util.Coords;
@@ -10,7 +13,6 @@ import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.ICubicStructureGenerator;
-import io.github.opencubicchunks.cubicchunks.api.worldgen.structure.event.InitCubicStructureGeneratorEvent;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -19,10 +21,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.MapGenCaves;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.terraingen.InitMapGenEvent;
-import net.minecraftforge.event.terraingen.TerrainGen;
 import net.minecraftforge.fml.common.Loader;
 
 import java.util.Collections;
@@ -53,6 +51,12 @@ public class CubicWorleyCaveGenerator implements ICubicStructureGenerator {
     private static final int xSubChunks = ICube.SIZE/xSubchunkSize;
     private static final int ySubChunks = ICube.SIZE/ySubchunkSize;
     private static final int zSubChunks = ICube.SIZE/zSubchunkSize;
+    // How far above minCaveY to start ramping up the noise cutoff, to avoid flat cave bottoms at minCaveY
+    private static final int caveBottomSmoothingHeight = 5;
+    // Rate at which the adjusted noise cutoff as we go below the cave bottom smoothing height.
+    private static final double smoothingNoiseIncreaseRate = 0.05; // noise cutoff/blocks below caveBottomSmoothingHeight
+    private static final double depthDependentWarpingRate = 1/0.85;
+    private static final boolean VISUALIZE_NOISE = false;
 
     long[] genTime = new long[300];
     int currentTimeIndex = 0;
@@ -63,11 +67,19 @@ public class CubicWorleyCaveGenerator implements ICubicStructureGenerator {
     private FastNoise displacementNoisePerlinZ = new FastNoise();
     private FastNoise warpAmplifierNoise = new FastNoise();
     private World world;
-
+    private static IBlockState LAVA;
     private static final IBlockState AIR;
     private static final IBlockState BLK_SANDSTONE;
     private static final IBlockState BLK_RED_SANDSTONE;
     private static final Set<Block> SIMPLE_REPLACE_BLOCKS;
+
+    private static int minCaveY;
+    private static int caveBottomSmoothingStartY;
+    private static int maxCaveY;
+    private static int caveTopSmoothingStartY;
+    private static int maxLavaY;
+    private static boolean doDepthDependentWarping;
+    private static boolean doNoiseBasedWarping;
     private static float noiseCutoff;
     private static float warpAmplifier;
     private static float yCompression;
@@ -90,11 +102,49 @@ public class CubicWorleyCaveGenerator implements ICubicStructureGenerator {
         warpAmplifierNoise.SetNoiseType(FastNoise.NoiseType.Perlin);
         warpAmplifierNoise.SetFrequency(0.03F);
         warpAmplifierNoise.SetSeed(noiseSeedRandom.nextInt());
+
+        // Default values, as per Worley's Caves config
+        doDepthDependentWarping = true;
+        doNoiseBasedWarping = false;
+        minCaveY = Configs.cavegen.minCaveHeight;
+        maxCaveY = Configs.cavegen.maxCaveHeight;
+        maxLavaY = Configs.cavegen.lavaDepth; // Worley's Caves uses this as the maximum y-level to spawn lava at.
+        caveBottomSmoothingStartY = minCaveY+caveBottomSmoothingHeight;
+
+        if (ConfigWorleyCaves._useModuleConfig) {
+            doDepthDependentWarping = ConfigWorleyCaves.depthIncreasesCaveWarping;
+            doNoiseBasedWarping = ConfigWorleyCaves.useWarpNoise;
+            if (ConfigWorleyCaves.noMaximumY) {
+                maxCaveY = Integer.MAX_VALUE;
+                caveTopSmoothingStartY = Integer.MAX_VALUE;
+                doDepthDependentWarping = false;
+            } else {
+                maxCaveY = ConfigWorleyCaves.maxCaveY;
+                caveTopSmoothingStartY = maxCaveY-caveBottomSmoothingHeight;
+            }
+            if (ConfigWorleyCaves.noMinimumY) {
+                minCaveY = Integer.MIN_VALUE;
+                maxLavaY = Integer.MIN_VALUE;
+                caveBottomSmoothingStartY = Integer.MIN_VALUE;
+                doDepthDependentWarping = false;
+            } else {
+                minCaveY = ConfigWorleyCaves.minCaveY;
+                maxLavaY = minCaveY+ConfigWorleyCaves.lavaDepth;
+                caveBottomSmoothingStartY = minCaveY+caveBottomSmoothingHeight;
+            }
+        }
+
         noiseCutoff = (float)Configs.cavegen.noiseCutoffValue;
         warpAmplifier = (float)Configs.cavegen.warpAmplifier;
         yCompression = (float)Configs.cavegen.verticalCompressionMultiplier;
         xzCompression = (float)Configs.cavegen.horizonalCompressionMultiplier;
         additionalWaterChecks = Loader.isModLoaded("subterraneanwaters"); // Original Worley's Caves spelled this "subterranaenwaters"
+
+        LAVA = BlockUtil.getStateFromString(Configs.cavegen.lavaBlock);
+        if (LAVA == null) {
+            ModLogger.error("Cannot find block: "+Configs.cavegen.lavaBlock);
+            LAVA = AIR;
+        }
 
         this.world = world;
     }
@@ -146,12 +196,28 @@ public class CubicWorleyCaveGenerator implements ICubicStructureGenerator {
                     float noiseStepY01 = (x0y1z1 - x0y0z1) * -oneHalf;
                     float noiseStepY10 = (x1y1z0 - x1y0z0) * -oneHalf;
                     float noiseStepY11 = (x1y1z1 - x1y0z1) * -oneHalf;
+                    /*
+                    Original Worley's Caves generates caves going downwards, and the noiseStepY__ values reflect this;
+                        however, within a vertical subchunk, it initializes the four corners' noise values (noiseStart_/End_)
+                        with the values for the bottom of that subchunk, even though it starts generating the subchunk
+                        at the top of the subchunk. This is what creates the two-high "steps" you see in caves. However,
+                        this also causes issues when maxCaveY is not Integer.MAX_VALUE; it causes a "flare-out", where
+                        you have massive slices taken out of the terrain at just below maxCaveY. Setting noiseStepY__
+                        to zero when just below maxCave prevents this from happening.
+                     */
+                    if (Coords.localToBlock(cubePos.getY(), subchunkY*ySubchunkSize) >= maxCaveY-1) {
+                        noiseStepY00 = 0;
+                        noiseStepY01 = 0;
+                        noiseStepY10 = 0;
+                        noiseStepY11 = 0;
+                    }
                     float noiseStartX0 = x0y0z0;
                     float noiseStartX1 = x0y0z1;
                     float noiseEndX0 = x1y0z0;
                     float noiseEndX1 = x1y0z1;
                     for (int subchunkLocalY = ySubchunkSize-1; subchunkLocalY >= 0; subchunkLocalY--) {
                         int localY = subchunkLocalY + subchunkY*ySubchunkSize;
+                        int realY = Coords.localToBlock(cubePos.getY(), localY);
                         float noiseStartZ = noiseStartX0;
                         float noiseEndZ = noiseStartX1;
                         float noiseStepX0 = (noiseEndX0 - noiseStartX0) * oneQuarter;
@@ -169,8 +235,16 @@ public class CubicWorleyCaveGenerator implements ICubicStructureGenerator {
                                 // TODO Stuff regarding depth
 
                                 float adjustedNoiseCutoff = noiseCutoff;
+                                // TODO Stuff regarding easeInDepth
 
                                 // TODO stuff w/ localY < minCaveHeight+5 (maybe)
+                                if (realY < caveBottomSmoothingStartY) {
+                                    adjustedNoiseCutoff = (float) ((double) adjustedNoiseCutoff + (double) (caveBottomSmoothingStartY - realY) * smoothingNoiseIncreaseRate);
+                                }
+
+                                if (realY > caveTopSmoothingStartY) {
+                                    adjustedNoiseCutoff = (float) ((double) adjustedNoiseCutoff + (double) (realY-caveTopSmoothingStartY) * smoothingNoiseIncreaseRate);
+                                }
 
                                 if (noiseVal > adjustedNoiseCutoff) {
                                     // FIXME Can't check the block above for blocks at the top of this cube, as that would be the start of the next cube.
@@ -206,6 +280,31 @@ public class CubicWorleyCaveGenerator implements ICubicStructureGenerator {
                         noiseStartX1 += noiseStepY01;
                         noiseEndX0 += noiseStepY10;
                         noiseEndX1 += noiseStepY11;
+                    }
+                }
+            }
+        }
+        if (VISUALIZE_NOISE) {
+            for (int x = 0; x < ICube.SIZE; x++) {
+                for (int y = 0; y < ICube.SIZE; y++) {
+                    for (int z = 0; z < ICube.SIZE; z++) {
+                        if (cubePos.getX() > -2){
+                            cube.setBlockState(x, y, z, AIR);
+                        }
+                        if ((x % xSubchunkSize) == 0 && (y % ySubchunkSize) == 0 && (z % zSubchunkSize) == 0) {
+                            float noiseVal = samples[x/xSubchunkSize][y/ySubchunkSize][z/zSubchunkSize];
+                            if (noiseVal < noiseCutoff-0.1) {
+                                cube.setBlockState(x, y, z, Blocks.GLASS_PANE.getDefaultState());
+                            } else if (noiseVal < noiseCutoff) {
+                                cube.setBlockState(x, y, z, Blocks.GLASS.getDefaultState());
+                            } else if (noiseVal < noiseCutoff+0.1) {
+                                cube.setBlockState(x, y, z, Blocks.DOUBLE_STONE_SLAB.getDefaultState());
+                            } else if (noiseVal < noiseCutoff+0.2) {
+                                cube.setBlockState(x, y, z, Blocks.STONE.getDefaultState());
+                            } else {
+                                cube.setBlockState(x, y, z, Blocks.OBSIDIAN.getDefaultState());
+                            }
+                        }
                     }
                 }
             }
@@ -248,18 +347,23 @@ public class CubicWorleyCaveGenerator implements ICubicStructureGenerator {
         IBlockState top = biome.topBlock;
         IBlockState filler = biome.fillerBlock;
         if (this.canReplaceBlock(state, up) || state.getBlock() == top.getBlock() || state.getBlock() == filler.getBlock()) {
+            int y = Coords.localToBlock(cubePos.getY(), localY);
             // FIXME Maybe stuff with y <= lavaDepth
-            cube.setBlockState(localX, localY, localZ, AIR);
-            if (localY > 0) {
-                if (foundTop && cube.getBlockState(localX, localY - 1, localZ).getBlock() == filler.getBlock()) {
-                    cube.setBlockState(localX, localY - 1, localZ, top);
+            if (y < maxLavaY) {
+                cube.setBlockState(localX, localY, localZ, LAVA);
+            } else {
+                cube.setBlockState(localX, localY, localZ, AIR);
+                if (localY > 0) {
+                    if (foundTop && cube.getBlockState(localX, localY - 1, localZ).getBlock() == filler.getBlock()) {
+                        cube.setBlockState(localX, localY - 1, localZ, top);
+                    }
                 }
-            }
-            if ((localY+1) < ICube.SIZE) {
-                if (up == Blocks.SAND.getDefaultState()) {
-                    cube.setBlockState(localX, localY + 1, localZ, BLK_SANDSTONE);
-                } else if (up == Blocks.SAND.getStateFromMeta(1)) {
-                    cube.setBlockState(localX, localY + 1, localZ, BLK_RED_SANDSTONE);
+                if ((localY + 1) < ICube.SIZE) {
+                    if (up == Blocks.SAND.getDefaultState()) {
+                        cube.setBlockState(localX, localY + 1, localZ, BLK_SANDSTONE);
+                    } else if (up == Blocks.SAND.getStateFromMeta(1)) {
+                        cube.setBlockState(localX, localY + 1, localZ, BLK_RED_SANDSTONE);
+                    }
                 }
             }
         }
@@ -285,43 +389,66 @@ public class CubicWorleyCaveGenerator implements ICubicStructureGenerator {
                     // TODO handle min/max cave height?
 
                     // TODO Handle cave warping
-//                    float dispAmp = (float)((double)warpAmplifier * ((double)(originalMaxHeight - y) / ((double)originalMaxHeight * 0.85D)));
-                    float dispAmp = warpAmplifier * warpAmplifierNoise.GetNoise((float)x, y, (float)z);
-                    float xDisp = 0.0F;
-                    float yDisp = 0.0F;
-                    float zDisp = 0.0F;
-                    xDisp = this.displacementNoisePerlinX.GetNoise((float)x, y, (float)z) * dispAmp;
-                    yDisp = this.displacementNoisePerlinY.GetNoise((float)x, y, (float)z) * dispAmp;
-                    zDisp = this.displacementNoisePerlinZ.GetNoise((float)x, y, (float)z) * dispAmp;
-                    float noise = this.worleyF1divF3.SingleCellular3Edge((float)x * xzCompression + xDisp, y * yCompression + yDisp, (float)z * xzCompression + zDisp);
-                    if (ySampleIndex >= 0) {
-                        noiseSamples[xSampleIndex][ySampleIndex][zSampleIndex] = noise;
-                    }
-                    if (noise > noiseCutoff) {
+                    if (y <= maxCaveY && y >= minCaveY) {
+                        // Using if-statements for readability; if performance is a problem, I can convert this over to
+                        //  multiplication with a constant value, which is set based on the config settings.
+                        float noiseBasedWarpRaw = 0.0F;
+                        if (doNoiseBasedWarping) {
+                            noiseBasedWarpRaw = Math.abs(warpAmplifierNoise.GetNoise(x, y, z));
+                        }
+                        float depthBasedWarpRaw = 0.0F;
+                        if (doDepthDependentWarping) {
+                            float fractionalDepth = (maxCaveY-y) / (maxCaveY-minCaveY);
+                            depthBasedWarpRaw = (float) depthDependentWarpingRate*fractionalDepth;
+                            // Reduce the scale of noise-based warp when depth-based warp is high, so we don't end up
+                            //  with extremely high net warp values.
+                            noiseBasedWarpRaw *= 1-0.8F*fractionalDepth;
+                        }
+
+//                        float dispAmp = warpAmplifier * warpAmplifierNoise.GetNoise((float) x, y, (float) z);
+                        float dispAmp = warpAmplifier * (noiseBasedWarpRaw + depthBasedWarpRaw);
+                        float xDisp = 0.0F;
+                        float yDisp = 0.0F;
+                        float zDisp = 0.0F;
+                        xDisp = this.displacementNoisePerlinX.GetNoise((float) x, y, (float) z) * dispAmp;
+                        yDisp = this.displacementNoisePerlinY.GetNoise((float) x, y, (float) z) * dispAmp;
+                        zDisp = this.displacementNoisePerlinZ.GetNoise((float) x, y, (float) z) * dispAmp;
+                        float noise = this.worleyF1divF3.SingleCellular3Edge((float) x * xzCompression + xDisp, y * yCompression + yDisp, (float) z * xzCompression + zDisp);
                         if (ySampleIndex >= 0) {
-                            if (xSampleIndex > 0) {
-                                noiseSamples[xSampleIndex - 1][ySampleIndex][zSampleIndex] = noise * 0.2F + noiseSamples[xSampleIndex - 1][ySampleIndex][zSampleIndex] * 0.8F;
+                            noiseSamples[xSampleIndex][ySampleIndex][zSampleIndex] = noise;
+                        }
+                        if (noise > noiseCutoff) {
+                            if (ySampleIndex >= 0) {
+                                if (xSampleIndex > 0) {
+                                    noiseSamples[xSampleIndex - 1][ySampleIndex][zSampleIndex] = noise * 0.2F + noiseSamples[xSampleIndex - 1][ySampleIndex][zSampleIndex] * 0.8F;
+                                }
+
+                                if (zSampleIndex > 0) {
+                                    noiseSamples[xSampleIndex][ySampleIndex][zSampleIndex - 1] = noise * 0.2F + noiseSamples[xSampleIndex][ySampleIndex][zSampleIndex - 1] * 0.8F;
+                                }
                             }
 
-                            if (zSampleIndex > 0) {
-                                noiseSamples[xSampleIndex][ySampleIndex][zSampleIndex - 1] = noise * 0.2F + noiseSamples[xSampleIndex][ySampleIndex][zSampleIndex - 1] * 0.8F;
+                            int ySampleIndexOneAbove = ySampleIndex + 1;
+                            if (ySampleIndexOneAbove >= 0 && ySampleIndexOneAbove < ySamplePoints
+                                    && Coords.localToBlock(cubePos.getY(), ySampleIndexOneAbove*ySubchunkSize) <= maxCaveY) {
+                                float noiseAbove = noiseSamples[xSampleIndex][ySampleIndexOneAbove][zSampleIndex];
+                                if (noise > noiseAbove) {
+                                    noiseSamples[xSampleIndex][ySampleIndexOneAbove][zSampleIndex] = noise * 0.8F + noiseAbove * 0.2F;
+                                }
+                            }
+
+                            int ySampleIndexTwoAbove = ySampleIndex + 2;
+                            if (ySampleIndexTwoAbove < ySamplePoints
+                                    && Coords.localToBlock(cubePos.getY(), ySampleIndexOneAbove*ySubchunkSize) <= maxCaveY) {
+                                float noiseTwoAbove = noiseSamples[xSampleIndex][ySampleIndexTwoAbove][zSampleIndex];
+                                if (noise > noiseTwoAbove) {
+                                    noiseSamples[xSampleIndex][ySampleIndexTwoAbove][zSampleIndex] = noise * 0.35F + noiseTwoAbove * 0.65F;
+                                }
                             }
                         }
-
-                        int ySampleIndexOneAbove = ySampleIndex+1;
-                        if (ySampleIndexOneAbove >= 0 && ySampleIndexOneAbove < ySamplePoints) {
-                            float noiseAbove = noiseSamples[xSampleIndex][ySampleIndexOneAbove][zSampleIndex];
-                            if (noise > noiseAbove) {
-                                noiseSamples[xSampleIndex][ySampleIndexOneAbove][zSampleIndex] = noise * 0.8F + noiseAbove * 0.2F;
-                            }
-                        }
-
-                        int ySampleIndexTwoAbove = ySampleIndex+2;
-                        if (ySampleIndexTwoAbove < ySamplePoints) {
-                            float noiseTwoAbove = noiseSamples[xSampleIndex][ySampleIndexTwoAbove][zSampleIndex];
-                            if (noise > noiseTwoAbove) {
-                                noiseSamples[xSampleIndex][ySampleIndexTwoAbove][zSampleIndex] = noise * 0.35F + noiseTwoAbove * 0.65F;
-                            }
+                    } else {
+                        if (ySampleIndex >= 0) {
+                            noiseSamples[xSampleIndex][ySampleIndex][zSampleIndex] = -1.1F;
                         }
                     }
                 }

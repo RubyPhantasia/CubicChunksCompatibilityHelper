@@ -23,13 +23,15 @@
 * Update my AddingNewMods.md?
 * Move dev environment setup instructions into a separate file.
 * Link to all the relevant files from my README.md
-* Add TESTING.md
+* [DONE] Add TESTING.md
 * Maybe move all my info files (Credits.md, AddingNewMods.md, etc.), except for a few major ones (e.g. README.md), to
   a folder?
 * See about using LangKeys for the config comments?
 * Go through and add comments where needed.
 * Note in the config file that to disable a module, they need to type "false" _exactly_ - any other string
   will count as "true", even "fals".
+  * See if there's a way to detect when the text entered for a boolean isn't "true"/"false"
+* Add the `RequiresMcRestart` annotation to entries in the main _enabledModules_ config.
 
 ## Mod-Specific
 
@@ -48,11 +50,16 @@
 
 ### Worley's Caves
 
-* Add separate config options that control how it generates in cubic worlds
-  * Also, add a config option to control if it uses the Worley's Caves config, or this mod's configs
+* [DONE] Add separate config options that control how it generates in cubic worlds
+  * [DONE] Also, add a config option to control if it uses the Worley's Caves config, or this mod's configs
     where relevant.
 * Handle the Hybrid world generator (https://github.com/Barteks2x/HybridWorld) properly.
 * Random breaks in the caves - where the tendrils that form them break.
 * Ability for Worley's caves nodes (where tendrils join) to connect to Vanilla spaghetti caves.
 * Ability to have layers where Worley's Caves generates?
 * See why the caves seem to roughly generate in two-block-high steps.
+* Note that if its config doesn't mention a particular setting, it uses the corresponding setting in
+  worleycaves.cfg
+* [DONE] Add the ability to increase cave warp with descending y-level?
+  * [DONE] Maybe config options allowing control over how cave warp increases, and how that combines with
+    noise-based warp if enabled. 
