@@ -79,7 +79,7 @@
     * [X] Subcase: Miner resumes mining if maximumRelativeDepth is upped to 20
 * [X] Case: deepestDiggableY = -4000, maximumRelativeDepth = 20
   * [X] Subcase: Miner at -3970, digs down twenty blocks
-    * [X] Subcase: Miner stops mining if maximumRelativeDepth is upped to 10 after it's dug over 10 blocks
+    * [X] Subcase: Miner stops mining if maximumRelativeDepth is dropped to 10 after it's dug over 10 blocks
     * [X] Subcase: Miner stops mining early if deepestDiggableY is changed to -3000 after it's dug a few blocks
   * [X] Subcase: Miner at -3990, digs down ten blocks
     * [X] Subcase: Miner continues mining if deepestDiggableY is changed to -5000
@@ -89,3 +89,30 @@
 * [X] Case: World seed 7, World type CWG; WorleyUtil seed should be -1156638823
 * [X] Case: World seed 42, World type CWG; WorleyUtil seed should be -1170105035
 * Want to ensure nothing has changed.
+
+### Ranged Pumps Pump
+* [X] Case: deepestPumpableY = -4000
+  * [X] Subcase: Pump at 2, pumps down across y=0
+  * [X] Subcase: Pump at 1, pumps down across y=0
+  * [X] Subcase: Pump at 0, pumps down
+  * [X] Subcase: Pump at -3999, does not pump below deepestPumpableY
+  * [X] Subcase: Pump at -4000, does not pump at all
+  * [X] Subcase: Pump at -4005, does not pump at all
+* [X] Case: deepestPumpableY = -4000, maximumRelativeDepth = 5
+  * [X] Subcase: Pump at -3994, pumps down five blocks
+  * [X] Subcase: Pump at -3995, pumps down five blocks
+  * [X] Subcase: Pump at -3996, pumps down four blocks
+  * [X] Subcase: Pump at -4000, does not pump down at all
+  * [X] Subcase: Pump at -4001, does not pump down at all
+  * [X] Subcase: Pump at 2, pumps down five blocks
+    * [X] Subcase: Pump starts pumping deeper if maximumRelativeDepth is upped to 10
+* [ ] Case: deepestPumpableY = -4000, maximumRelativeDepth = 20
+  * [X] Subcase: Pump at -3970, pumps down twenty blocks
+    * [ ] Subcase: Pump continues pumping at the correct height if the world is saved and reloaded
+    * [ ] Subcase: Pump continues pumping at roughly the correct height after all four of these steps have been executed:
+      1. Saving the world
+      2. Loading the world without the module enabled
+      3. Saving the world again
+      4. Loading the world with the module enabled.
+  * [X] Subcase: Pump at -3990, pumps down ten blocks
+    * [ ] Subcase: Pump continues pumping if deepestPumpableY is changed to -5000

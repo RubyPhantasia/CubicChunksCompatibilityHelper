@@ -1,21 +1,26 @@
 package com.rubyphantasia.cubic_chunks_compatibility_helper.modules.rangedpumps.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.raoulvdberge.rangedpumps.tile.TilePump;
+import com.rubyphantasia.cubic_chunks_compatibility_helper.config.ConfigRangedPumps;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.util.Miscellaneous;
 import io.github.opencubicchunks.cubicchunks.api.world.IMinMaxHeight;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import javax.annotation.Nullable;
+
 @Mixin(TilePump.class)
 public abstract class Mixin_TilePump_Deeper extends TileEntity {
-    private final int MAX_RELATIVE_DEPTH = 300;
-    private final int MAX_ABSOLUTE_DEPTH = -10000;
+    @Shadow @Nullable private BlockPos currentPos;
     private int maxDepth = Integer.MAX_VALUE;
     private IMinMaxHeight worldMinMaxHeight = new IMinMaxHeight() {};
 
@@ -32,7 +37,7 @@ public abstract class Mixin_TilePump_Deeper extends TileEntity {
     }
 
     public void setMaxDepth() {
-        maxDepth = Math.max(MAX_ABSOLUTE_DEPTH, pos.getY()-MAX_RELATIVE_DEPTH);
+        maxDepth = Math.max(ConfigRangedPumps.deepestPumpableY, pos.getY()-ConfigRangedPumps.maximumRelativeDepth);
     }
 
     @Inject(method="rebuildSurfaces",
@@ -45,5 +50,15 @@ public abstract class Mixin_TilePump_Deeper extends TileEntity {
             at=@At("TAIL"))
     public void setMaxDepthWhenLoading(CallbackInfo ci) {
         setMaxDepth();
+    }
+
+    @ModifyExpressionValue(method="getState",
+                            at=@At(value = "FIELD", opcode=Opcodes.GETFIELD, target = "Lcom/raoulvdberge/rangedpumps/RangedPumps;range:I"), remap=false)
+    public int ccch_setDoneIfBelowPumpingYLimit(int original) {
+        if ((this.pos.getY()-1) < ConfigRangedPumps.deepestPumpableY) {
+            return -2;
+        } else {
+            return original;
+        }
     }
 }

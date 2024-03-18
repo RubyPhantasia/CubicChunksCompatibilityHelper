@@ -52,8 +52,10 @@
 
 ### Ranged Pumps
 
-* Make absolute/relative pumping depth configurable.
+* [DONE] Make absolute/relative pumping depth configurable.
 * Some kind of option to set an individual pump's max depth in its GUI?
+* Maybe fix an apparent bug in the TilePump::onLoad method, where it always calls rebuildSurfaces, even if the pump has already exceeded its range? This might just be overwritten when readFromNBT is called.
+* Maybe detect if the pump's configured range has increased since it was last saved, and ensure that it pumps out the newly accessible parts of any columns it previously pumped (i.e. ensure that it pumps all columns down to the new range limit).
 
 ### Worley's Caves
 
