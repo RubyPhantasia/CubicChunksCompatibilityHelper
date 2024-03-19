@@ -136,6 +136,7 @@ idea {
 
 mixin {
     add sourceSets.main, 'mixins.' + modid + '.refmap.json'
+    config "mixins." + modid + ".json"
 }
 
 // Example for how to get properties into the manifest for reading by the runtime.

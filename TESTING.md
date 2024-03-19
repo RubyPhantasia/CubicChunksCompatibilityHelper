@@ -108,11 +108,26 @@
     * [X] Subcase: Pump starts pumping deeper if maximumRelativeDepth is upped to 10
 * [ ] Case: deepestPumpableY = -4000, maximumRelativeDepth = 20
   * [X] Subcase: Pump at -3970, pumps down twenty blocks
-    * [ ] Subcase: Pump continues pumping at the correct height if the world is saved and reloaded
-    * [ ] Subcase: Pump continues pumping at roughly the correct height after all four of these steps have been executed:
+    * [X] Subcase: Pump continues pumping at the correct height if the world is saved and reloaded
+    * [X] Subcase: Pump continues pumping at roughly the correct height after all four of these steps have been executed:
       1. Saving the world
       2. Loading the world without the module enabled
       3. Saving the world again
-      4. Loading the world with the module enabled.
+      4. Loading the world with the module enabled
+      * Note: used maximumRelativeDepth = 5, pump at -3000 for this test
   * [X] Subcase: Pump at -3990, pumps down ten blocks
-    * [ ] Subcase: Pump continues pumping if deepestPumpableY is changed to -5000
+    * [ ] Subcase: Pump starts pumping deeper if deepestPumpableY is changed to -5000
+  * [ ] Subcase: Pump at 0, 2 in non-cubic world; doesn't pump below bedrock.
+
+### Ranged Pumps Pump - save-data
+* Goals:
+  * When loading a world which didn't previous have this module enabled, it correctly guesses the actual BlockPos's for current and future positions (surfaces).
+  * Correctly saves and reloads full, untruncated position for pumps
+* Tests:
+  * [X] Save world with pumps at -2400, -4, 4, and 3000, without this module enabled; when loading the world with this module enabled, it should correctly determine each of their current/future positions
+    * [X] Pump at 4 should be allowed to pump long enough to generate a list of surfaces.
+  * [X] Save world with pump at 71, with currentPos down at -5001, without this module enabled; should not correctly guess the position (should wrap to about y=96)
+  * [X] Save world with Pumps at -2400, 4, 4, and 3000, with this module enabled; when loading the world, should correctly guess the position
+  * [X] Save world with two pumps at -4, one with the module enabled, one without the module enabled; when loading world with module enabled, it should correctly determine each of their current/future positions
+  * [X] Save world with one pump at -3000, with this module enabled; when loading the world without the module, should not guess position correctly.
+* A method that works is to create all the pumps, then save the world w/ breakpoints enabled (and a breakpoint at the end of the TilePump::writeToNBT method), capture the relevant state as a single string (e.g. ""+this.currentPos+this.surfaces.toString()+tag), and copy it into a text editor; repeat this for each pump as it saves to disk. Then, when loading the world, enable the appropriate readFromNBT breakpoint(s), capture the relevant state at the end of the method, and use Python to compare the two strings - they should be equal.
