@@ -16,7 +16,6 @@ package com.rubyphantasia.cubic_chunks_compatibility_helper.modules.rangedpumps.
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.raoulvdberge.rangedpumps.tile.TilePump;
-import com.rubyphantasia.cubic_chunks_compatibility_helper.ModLogger;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.config.ConfigRangedPumps;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.modules.rangedpumps.constants.Constants_RangedPump_NBT;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.util.Miscellaneous;
@@ -29,6 +28,7 @@ import net.minecraft.world.World;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -43,46 +43,50 @@ public abstract class Mixin_TilePump_Deeper extends TileEntity {
     @Shadow @Nullable private BlockPos currentPos;
     @Shadow
     private Queue<BlockPos> surfaces;
-    private int maxDepth = Integer.MAX_VALUE;
-    private IMinMaxHeight worldMinMaxHeight = new IMinMaxHeight() {};
+    @Unique
+    private int ccch_maxDepth = Integer.MAX_VALUE;
+    @Unique
+    private IMinMaxHeight ccch_worldMinMaxHeight = new IMinMaxHeight() {};
 
     @Redirect(method="update",
                 at=@At(value="INVOKE", target="Lnet/minecraft/util/math/BlockPos;getY()I"))
-    public int allowPumpingAcrossYZero(BlockPos pos) {
-        return atOrBelowLowestPumpableY(pos) ? 0 : 1;
+    public int ccch_allowPumpingAcrossYZero(BlockPos pos) {
+        return ccch_atOrBelowLowestPumpableY(pos) ? 0 : 1;
     }
 
-    private boolean atOrBelowLowestPumpableY(BlockPos pos) {
-        return pos.getY() <= maxDepth || pos.getY() <= worldMinMaxHeight.getMinHeight();
+    @Unique
+    private boolean ccch_atOrBelowLowestPumpableY(BlockPos pos) {
+        return pos.getY() <= ccch_maxDepth || pos.getY() <= ccch_worldMinMaxHeight.getMinHeight();
     }
 
     @Override
     public void setWorld(World worldIn) {
         super.setWorld(worldIn);
-        worldMinMaxHeight = Miscellaneous.fetchOrCreateMinMaxHeight(worldIn);
+        ccch_worldMinMaxHeight = Miscellaneous.fetchOrCreateMinMaxHeight(worldIn);
     }
 
-    public void setMaxDepth() {
-        maxDepth = Math.max(ConfigRangedPumps.deepestPumpableY, pos.getY()-ConfigRangedPumps.maximumRelativeDepth);
+    @Unique
+    public void ccch_setMaxDepth() {
+        ccch_maxDepth = Math.max(ConfigRangedPumps.deepestPumpableY, pos.getY()-ConfigRangedPumps.maximumRelativeDepth);
     }
 
     @Inject(method="rebuildSurfaces",
             at=@At(value="INVOKE", target="Lnet/minecraft/util/math/BlockPos;down()Lnet/minecraft/util/math/BlockPos;"))
-    public void setMaxDepthWhenInitialized(CallbackInfo ci) {
-        setMaxDepth();
+    public void ccch_setMaxDepthWhenInitialized(CallbackInfo ci) {
+        ccch_setMaxDepth();
     }
 
     @Inject(method="readFromNBT",
             at=@At("TAIL"))
-    public void setMaxDepthWhenLoading(CallbackInfo ci) {
-        setMaxDepth();
+    public void ccch_setMaxDepthWhenLoading(CallbackInfo ci) {
+        ccch_setMaxDepth();
     }
 
     @ModifyExpressionValue(method="getState",
                             at=@At(value = "FIELD", opcode=Opcodes.GETFIELD, target = "Lcom/raoulvdberge/rangedpumps/RangedPumps;range:I"), remap=false)
-    public int ccch_setDoneIfBelowPumpingYLimit(int original) {
+    public int ccch_doneIfPumpAtOrBelowYLimit(int original) {
         // If the position is at the lowest pumpable Y, the first position it would pump at is below the lowest pumpable Y.
-        if (atOrBelowLowestPumpableY(this.pos)) {
+        if (ccch_atOrBelowLowestPumpableY(this.pos)) {
             return -2;
         } else {
             return original;
@@ -93,19 +97,19 @@ public abstract class Mixin_TilePump_Deeper extends TileEntity {
     // Correct the block pos computed, when computing it from a long value.
     @ModifyExpressionValue(method="readFromNBT",
             at=@At(value= "INVOKE", target="Lnet/minecraft/util/math/BlockPos;fromLong(J)Lnet/minecraft/util/math/BlockPos;"), expect=2, allow=2)
-    public BlockPos guessActualBlockPos(BlockPos original) {
+    public BlockPos ccch_guessActualBlockPos(BlockPos original) {
         return Miscellaneous.attemptToCorrectTruncatedYValue(original, this.pos.getY());
     }
 
     // Ensure we read the non-truncated current position, if it is available.
     @ModifyExpressionValue(method="readFromNBT",
             at=@At(value= "INVOKE", target="Lnet/minecraft/nbt/NBTTagCompound;hasKey(Ljava/lang/String;)Z", ordinal=1))
-    public boolean shouldReadTruncatedPosition(boolean original, NBTTagCompound tag) {
+    public boolean ccch_checkForNonTruncatedCurrentPosition(boolean original, NBTTagCompound tag) {
         return original && !tag.hasKey(Constants_RangedPump_NBT.CCCH_CURRENT_POS_KEY);
     }
 
     @Inject(method="readFromNBT", at= @At("TAIL"))
-    public void readNonTruncatedCurrentPosition(NBTTagCompound tag, CallbackInfo ci) {
+    public void ccch_readNonTruncatedCurrentPosition(NBTTagCompound tag, CallbackInfo ci) {
         if (tag.hasKey("CurrentPos") && tag.hasKey(Constants_RangedPump_NBT.CCCH_CURRENT_POS_KEY)) {
             this.currentPos = Miscellaneous.NBTToBlockPos(tag.getCompoundTag(Constants_RangedPump_NBT.CCCH_CURRENT_POS_KEY));
         }
@@ -113,12 +117,12 @@ public abstract class Mixin_TilePump_Deeper extends TileEntity {
 
     // Ensure we read the non-truncated surfaces, if they are available.
     @ModifyExpressionValue(method="readFromNBT", at= @At(value = "INVOKE", target = "Lnet/minecraft/nbt/NBTTagCompound;hasKey(Ljava/lang/String;)Z", ordinal=3))
-    public boolean checkForNonTruncatedSurfaces(boolean original, NBTTagCompound tag) {
+    public boolean ccch_checkForNonTruncatedSurfaces(boolean original, NBTTagCompound tag) {
         return original && !tag.hasKey(Constants_RangedPump_NBT.CCCH_SURFACES_KEY);
     }
 
     @Inject(method="readFromNBT", at= @At(value = "INVOKE", target = "Lnet/minecraftforge/fluids/FluidTank;readFromNBT(Lnet/minecraft/nbt/NBTTagCompound;)Lnet/minecraftforge/fluids/FluidTank;"))
-    public void readNonTruncatedSurfaces(NBTTagCompound tag, CallbackInfo ci) {
+    public void ccch_readNonTruncatedSurfaces(NBTTagCompound tag, CallbackInfo ci) {
         if (tag.hasKey("CurrentPos") && tag.hasKey(Constants_RangedPump_NBT.CCCH_SURFACES_KEY)) {
             NBTTagList nbtSurfaces = tag.getTagList(Constants_RangedPump_NBT.CCCH_SURFACES_KEY, 10);
             nbtSurfaces.forEach(nbtBlockPos -> surfaces.add(Miscellaneous.NBTToBlockPos((NBTTagCompound) nbtBlockPos)));
@@ -126,7 +130,7 @@ public abstract class Mixin_TilePump_Deeper extends TileEntity {
     }
 
     @Inject(method="writeToNBT", at=@At("TAIL"))
-    public void writeFullBlockPositions(NBTTagCompound tag, CallbackInfoReturnable<NBTTagCompound> ci) {
+    public void ccch_writeFullBlockPositions(NBTTagCompound tag, CallbackInfoReturnable<NBTTagCompound> ci) {
         if (this.currentPos != null) {
             tag.setTag(Constants_RangedPump_NBT.CCCH_CURRENT_POS_KEY, Miscellaneous.blockPosToNBT(this.currentPos));
         }
