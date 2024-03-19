@@ -39,7 +39,8 @@
 * Change mixins to use ModifyExpressionValue and other MixinExtras injectors where needed.
 * Add list of common Cubic Chunks incompatibilities I've seen.
 * Add way for my mod to automatically detect common incompatibilities in other mods and record them in a file.
-* Add license text to header of all java files.
+* [MOSTLY DONE] Add license text to header of all java files.
+  * [DONE] Add template to generate Java classes with the license text in the header.
 * Get in-game config menu working for my mod
 * Get the mod info to display correctly in-game
 * Add tasks to clean up the run directory (remove old saves, log files, crash reports, and configs)
