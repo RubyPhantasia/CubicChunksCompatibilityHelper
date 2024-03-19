@@ -90,7 +90,10 @@
 * [X] Case: World seed 42, World type CWG; WorleyUtil seed should be -1170105035
 * Want to ensure nothing has changed.
 
-### Ranged Pumps Pump
+### Ranged Pumps
+
+#### General Pump Tests
+
 * [X] Case: deepestPumpableY = -4000
   * [X] Subcase: Pump at 2, pumps down across y=0
   * [X] Subcase: Pump at 1, pumps down across y=0
@@ -106,7 +109,7 @@
   * [X] Subcase: Pump at -4001, does not pump down at all
   * [X] Subcase: Pump at 2, pumps down five blocks
     * [X] Subcase: Pump starts pumping deeper if maximumRelativeDepth is upped to 10
-* [ ] Case: deepestPumpableY = -4000, maximumRelativeDepth = 20
+* [X] Case: deepestPumpableY = -4000, maximumRelativeDepth = 20
   * [X] Subcase: Pump at -3970, pumps down twenty blocks
     * [X] Subcase: Pump continues pumping at the correct height if the world is saved and reloaded
     * [X] Subcase: Pump continues pumping at roughly the correct height after all four of these steps have been executed:
@@ -116,10 +119,10 @@
       4. Loading the world with the module enabled
       * Note: used maximumRelativeDepth = 5, pump at -3000 for this test
   * [X] Subcase: Pump at -3990, pumps down ten blocks
-    * [ ] Subcase: Pump starts pumping deeper if deepestPumpableY is changed to -5000
-  * [ ] Subcase: Pump at 0, 2 in non-cubic world; doesn't pump below bedrock.
+    * [X] Subcase: Pump starts pumping deeper if deepestPumpableY is changed to -5000
+  * [X] Subcase: Pump at 0, 2 in non-cubic world; doesn't pump below bedrock.
 
-### Ranged Pumps Pump - save-data
+#### Save-data
 * Goals:
   * When loading a world which didn't previous have this module enabled, it correctly guesses the actual BlockPos's for current and future positions (surfaces).
   * Correctly saves and reloads full, untruncated position for pumps
@@ -131,3 +134,17 @@
   * [X] Save world with two pumps at -4, one with the module enabled, one without the module enabled; when loading world with module enabled, it should correctly determine each of their current/future positions
   * [X] Save world with one pump at -3000, with this module enabled; when loading the world without the module, should not guess position correctly.
 * A method that works is to create all the pumps, then save the world w/ breakpoints enabled (and a breakpoint at the end of the TilePump::writeToNBT method), capture the relevant state as a single string (e.g. ""+this.currentPos+this.surfaces.toString()+tag), and copy it into a text editor; repeat this for each pump as it saves to disk. Then, when loading the world, enable the appropriate readFromNBT breakpoint(s), capture the relevant state at the end of the method, and use Python to compare the two strings - they should be equal.
+
+#### Fixing pump attempting to pump below world height
+* Added check for world height to the ccch_setDoneIfBelowPumpingYLimit function; refactored common functionality out of it and the allowPumpingAcrossYZero function.
+* Tests in cubic world:
+  * [X] Pumps at 2, 0, and -1, maximumRelativeDepth=5; should pump across y=0
+  * [X] Pump at -3999, deepestPumpableY=-4000; should only pump down to -4000
+  * [X] Pump at -4000, -4001, deepestPumpableY=-4000; should not pump at all
+* Test in non-cubic world:
+  * [X] Pump at 1, deepestPumpableY=-4000; should only pump down to y=0
+  * [X] Pump at 0, deepestPumpableY=-4000; should not pump at all
+  * [X] Pump at 1, deepestPumpableY=0; should only pump down to y=0
+  * [X] Pump at 0, deepestPumpableY=0; should not pump at all
+  * [X] Pump at 2, deepestPumpableY=1; should only pump down to y=1
+  * [X] Pump at 1, 0, deepestPumpableY=1; should not pump at all

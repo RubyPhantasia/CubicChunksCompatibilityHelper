@@ -35,7 +35,11 @@ public abstract class Mixin_TilePump_Deeper extends TileEntity {
     @Redirect(method="update",
                 at=@At(value="INVOKE", target="Lnet/minecraft/util/math/BlockPos;getY()I"))
     public int allowPumpingAcrossYZero(BlockPos pos) {
-        return (pos.getY() <= maxDepth || pos.getY() <= worldMinMaxHeight.getMinHeight()) ? 0 : 1;
+        return atOrBelowLowestPumpableY(pos) ? 0 : 1;
+    }
+
+    private boolean atOrBelowLowestPumpableY(BlockPos pos) {
+        return pos.getY() <= maxDepth || pos.getY() <= worldMinMaxHeight.getMinHeight();
     }
 
     @Override
@@ -63,7 +67,8 @@ public abstract class Mixin_TilePump_Deeper extends TileEntity {
     @ModifyExpressionValue(method="getState",
                             at=@At(value = "FIELD", opcode=Opcodes.GETFIELD, target = "Lcom/raoulvdberge/rangedpumps/RangedPumps;range:I"), remap=false)
     public int ccch_setDoneIfBelowPumpingYLimit(int original) {
-        if ((this.pos.getY()-1) < ConfigRangedPumps.deepestPumpableY) {
+        // If the position is at the lowest pumpable Y, the first position it would pump at is below the lowest pumpable Y.
+        if (atOrBelowLowestPumpableY(this.pos)) {
             return -2;
         } else {
             return original;

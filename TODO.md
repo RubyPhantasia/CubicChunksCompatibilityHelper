@@ -39,6 +39,12 @@
 * Change mixins to use ModifyExpressionValue and other MixinExtras injectors where needed.
 * Add list of common Cubic Chunks incompatibilities I've seen.
 * Add license text to header of all java files.
+* Get in-game config menu working for my mod
+* Get the mod info to display correctly in-game
+* Add tasks to clean up the run directory (remove old saves, log files, crash reports, and configs)
+  * Or check if ForgeGradle already provides tasks like these
+* See about creating some way to automatically test modules, where possible
+  * I.e. loading into a world with specific config settings, placing blocks, waiting X ticks, then checking that certain blocks are at specified positions.
 
 ## Mod-Specific
 
