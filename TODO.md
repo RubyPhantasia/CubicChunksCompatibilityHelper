@@ -38,6 +38,7 @@
 * Determine if the roundabout (I_SomeMixinInterface ((Object) targetInstance)) cast is necessary for using interfaces which are added to mixin-targeted classes, and suppress the warnings if necessary.
 * Change mixins to use ModifyExpressionValue and other MixinExtras injectors where needed.
 * Add list of common Cubic Chunks incompatibilities I've seen.
+* Add way for my mod to automatically detect common incompatibilities in other mods and record them in a file.
 * Add license text to header of all java files.
 * Get in-game config menu working for my mod
 * Get the mod info to display correctly in-game
