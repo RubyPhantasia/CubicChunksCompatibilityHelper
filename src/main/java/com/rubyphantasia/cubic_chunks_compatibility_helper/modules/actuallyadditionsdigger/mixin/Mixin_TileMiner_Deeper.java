@@ -33,7 +33,7 @@ import static com.rubyphantasia.cubic_chunks_compatibility_helper.modules.actual
 @Mixin(value=TileEntityMiner.class, remap=false)
 public abstract class Mixin_TileMiner_Deeper extends TileEntityInventoryBase implements ITileMiner_Deeper {
     @Unique
-    private int ccch_maxDepth = Integer.MAX_VALUE;
+    private int ccch_targetYLevel = Integer.MAX_VALUE;
     @Unique
     private IMinMaxHeight ccch_worldMinMaxHeight = new IMinMaxHeight() {};
 
@@ -44,14 +44,27 @@ public abstract class Mixin_TileMiner_Deeper extends TileEntityInventoryBase imp
         super(slots, name);
     }
 
+    /**
+     * Sets the y-level the digger will attempt to dig to, w/o considering the actual world height.
+     * Use this b/c I don't think the world is available at this point in time, so we can't query it for the minimum
+     * y-level.
+     */
     @Unique
-    private void ccch_setMaxDepth() {
-        ccch_maxDepth = Math.max(ConfigActuallyAdditionsDigger.deepestDiggableY, pos.getY()-ConfigActuallyAdditionsDigger.maximumRelativeDepth);
+    private void ccch_setTargetYLevel() {
+        ccch_targetYLevel = Math.max(ConfigActuallyAdditionsDigger.deepestDiggableY, pos.getY()-ConfigActuallyAdditionsDigger.maximumRelativeDepth);
+    }
+
+    /**
+     * @return Actual lowest diggable y-level
+     */
+    @Unique
+    private int ccch_getLowestDiggableY() {
+        return Math.max(ccch_targetYLevel, ccch_worldMinMaxHeight.getMinHeight());
     }
 
     public boolean ccch_isDoneMining() {
         boolean inProgressOrFinished = checkY != NOT_STARTED_Y_VALUE;
-        boolean pastDepthLimit = checkY< ccch_maxDepth || checkY < ccch_worldMinMaxHeight.getMinHeight();
+        boolean pastDepthLimit = checkY < ccch_getLowestDiggableY();
         return inProgressOrFinished && pastDepthLimit;
     }
 
@@ -63,7 +76,7 @@ public abstract class Mixin_TileMiner_Deeper extends TileEntityInventoryBase imp
     @Redirect(method="updateEntity",
             at=@At(value="FIELD", opcode=Opcodes.GETFIELD, target="Lde/ellpeck/actuallyadditions/mod/tile/TileEntityMiner;checkY:I", ordinal=0),
             require=1, allow=1)
-    public int ccch_fixYEqualsZero(TileEntityMiner miner) {
+    public int ccch_fixMiningFinishedCheck(TileEntityMiner miner) {
         return ccch_isDoneMining() ? 0 : 1;
     }
 
@@ -75,10 +88,10 @@ public abstract class Mixin_TileMiner_Deeper extends TileEntityInventoryBase imp
     }
 
     @Inject(method="updateEntity",
-            at=@At(value="FIELD", opcode=Opcodes.GETFIELD, target="Lde/ellpeck/actuallyadditions/mod/tile/TileEntityMiner;checkY:I", ordinal=2),
+            at=@At(value="FIELD", opcode=Opcodes.PUTFIELD, target="Lde/ellpeck/actuallyadditions/mod/tile/TileEntityMiner;checkY:I", ordinal=0),
             require=1, allow=1)
-    public void ccch_onReset(CallbackInfo ci) {
-        ccch_setMaxDepth();
+    public void ccch_setTargetYOnReset(CallbackInfo ci) {
+        ccch_setTargetYLevel();
     }
 
     @ModifyConstant(method="updateEntity",
@@ -86,7 +99,7 @@ public abstract class Mixin_TileMiner_Deeper extends TileEntityInventoryBase imp
             require=1, allow=1)
     public int ccch_mineBelowZero(int oldConstant) {
         // Minus one b/c it mines if y>returnValue, and we want it to mine at the maxdepth/lowest block.
-        return Math.max(ccch_maxDepth, ccch_worldMinMaxHeight.getMinHeight())-1;
+        return ccch_getLowestDiggableY()-1;
     }
 
     @Override
@@ -98,12 +111,12 @@ public abstract class Mixin_TileMiner_Deeper extends TileEntityInventoryBase imp
     @ModifyConstant(method="onButtonPressed",
                     constant=@Constant(intValue=-1),
                     require=1, allow = 1)
-    public int setCheckYToNotStartedValue(int oldValue) {
+    public int ccch_resetCheckY(int oldValue) {
         return NOT_STARTED_Y_VALUE;
     }
 
     @Inject(method="readSyncableNBT", at=@At("TAIL"))
-    public void createdFromNBT(CallbackInfo ci) {
-        ccch_setMaxDepth();
+    public void ccch_setTargetYOnReadingNBT(CallbackInfo ci) {
+        ccch_setTargetYLevel();
     }
 }

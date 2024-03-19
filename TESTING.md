@@ -60,23 +60,13 @@
   * [X] Subcase: Miner at -3999, does not dig below deepestDiggableY
   * [X] Subcase: Miner at -4000, does not dig at all
   * [X] Subcase: Miner at -4005, does not dig at all
-  * [X] Subcase: Miner at -10000, does not dig at all
-  * [X] Subcase: Miner at -1, digs down
   * [X] Subcase: Miner at 0, digs down
   * [X] Subcase: Miner at 1, digs down across y=0
   * [X] Subcase: Miner at 2, digs down across y=0
 * [X] Case: deepestDiggableY = -4000, maximumRelativeDepth = 5
   * [X] Subcase: Miner at -3994, digs down five blocks
+    * [X] Subcase: Miner resumes mining if maximumRelativeDepth is upped to 10
   * [X] Subcase: Miner at -3995, digs down five blocks
-  * [X] Subcase: Miner at -3996, digs down four blocks
-  * [X] Subcase: Miner at -3999, digs down one block
-  * [X] Subcase: Miner at -4000, does not dig down at all
-  * [X] Subcase: Miner at -4001, does not dig down at all
-  * [X] Subcase: Miner at 2, digs down five blocks
-  * [X] Subcase: Miner at 1, digs down five blocks
-  * [X] Subcase: Miner at 0, digs down five blocks
-  * [X] Subcase: Miner at -1, digs down five blocks
-    * [X] Subcase: Miner resumes mining if maximumRelativeDepth is upped to 20
 * [X] Case: deepestDiggableY = -4000, maximumRelativeDepth = 20
   * [X] Subcase: Miner at -3970, digs down twenty blocks
     * [X] Subcase: Miner stops mining if maximumRelativeDepth is dropped to 10 after it's dug over 10 blocks
