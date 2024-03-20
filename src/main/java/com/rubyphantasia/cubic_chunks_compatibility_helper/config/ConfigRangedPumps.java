@@ -20,8 +20,11 @@ import net.minecraftforge.common.config.Config;
 @Config.RequiresWorldRestart
 @Config(modid=ModInfo.MODID, name=ModInfo.MODULE_CONFIGS_PATH_PREFIX +"rangedpumps")
 public class ConfigRangedPumps {
+
+    @SuppressWarnings("unused")
     @Config.Comment({
-            "The deepest a pump can pump down to is its y-level minus maximumRelativeDepth, or deepestPumpableY, whichever is higher in the world.",
+            "The deepest a pump can pump down to is its y-level minus maximumRelativeDepth, or",
+            "\tdeepestPumpableY, whichever is higher in the world.",
             "This variable does nothing."
     })
     public static boolean _explanation = true;

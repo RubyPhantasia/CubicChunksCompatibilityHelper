@@ -21,8 +21,18 @@ import net.minecraftforge.common.config.Config;
 import java.util.HashSet;
 import java.util.Set;
 
+@Config.RequiresMcRestart
 @Config(modid=ModInfo.MODID, name = ModInfo.MODID+"_enabledModules")
 public class ConfigEnabledModules {
+
+    @SuppressWarnings("unused")
+    @Config.Comment({
+            "This file controls if specific modules are enabled when the corresponding mods are present.",
+            "\tNote that if you want to disable a module, you must type \"false\" exactly - anything",
+            "\telse will be interpreted as \"true\".",
+            "This variable does nothing."
+    })
+    public static boolean _explanation = true;
 
     private static final Set<String> enabledModulesFieldNames = new HashSet<>();
 
