@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.ReplaceTokens;
+
 buildscript {
     repositories {
         maven { url = 'https://maven.minecraftforge.net/' }
@@ -63,6 +65,19 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
         }
     }
+}
+
+processResources {
+    // Ensure this task is performed anytime any of these properties change
+    inputs.property "modVersion", modVersion
+    inputs.property "modid", modid
+    inputs.property "packageName", mainPackageName
+    inputs.property "author", author
+    inputs.property "modDescription", modDescription
+    inputs.property "modName", modName
+    // Replace tokens of the form @TOKEN_NAME@, such as the tokens in ModInfo.java
+    filter(ReplaceTokens, tokens: [MOD_VERSION: version, MODID: modid, PACKAGE_NAME: mainPackageName,
+                                   AUTHOR: author, MOD_DESCRIPTION: modDescription, MOD_NAME: modName])
 }
 
 repositories {
@@ -137,6 +152,26 @@ idea {
 mixin {
     add sourceSets.main, 'mixins.' + modid + '.refmap.json'
     config "mixins." + modid + ".json"
+}
+
+// This method of substituting tokens in the java source files is from: https://stackoverflow.com/a/54094378
+tasks.register('processSource', Sync) {
+    from sourceSets.main.java
+    // Ensure this task is performed anytime any of these properties change
+    inputs.property "modVersion", modVersion
+    inputs.property "modid", modid
+    inputs.property "packageName", mainPackageName
+    inputs.property "author", author
+    inputs.property "modDescription", modDescription
+    inputs.property "modName", modName
+    // Replace tokens of the form @TOKEN_NAME@, such as the tokens in mcmod.info
+    filter(ReplaceTokens, tokens: [MOD_VERSION: modVersion, MODID: modid, PACKAGE_NAME: mainPackageName,
+                                   AUTHOR: author, MOD_DESCRIPTION: modDescription, MOD_NAME: modName])
+    into "$buildDir/src"
+}
+
+compileJava {
+    source = processSource.outputs
 }
 
 // Example for how to get properties into the manifest for reading by the runtime.
