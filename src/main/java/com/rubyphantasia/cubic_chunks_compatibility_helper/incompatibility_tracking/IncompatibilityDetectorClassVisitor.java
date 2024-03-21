@@ -30,10 +30,25 @@ public class IncompatibilityDetectorClassVisitor extends ClassVisitor {
         this.incompatibilityDetector = incompatibilityDetector;
     }
 
+    private boolean containsInterface(String interfaceToCheck, String[] interfaces) {
+        for (String intface : interfaces) {
+            if (interfaceToCheck.equals(intface)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void visit(int version, int access, String obfuscatedName, String signature, String superName, String[] interfaces) {
         super.visit(version, access, obfuscatedName, signature, superName, interfaces);
         this.obfuscatedName = obfuscatedName;
+        if (superName.startsWith("net/minecraft/world/gen/MapGen")) {
+            incompatibilityDetector.writeLine("Found class that extends a net/minecraft/world/gen/MapGen* class: "+this);
+        }
+        if (containsInterface("net/minecraftforge/fml/common/IWorldGenerator", interfaces)) {
+            incompatibilityDetector.writeLine("Found class that implements net/minecraftforge/fml/common/IWorldGenerator: "+this);
+        }
     }
 
     @Override

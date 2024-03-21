@@ -25,7 +25,12 @@ import java.io.IOException;
 
 public class IncompatibilityDetector implements IClassTransformer {
 
-    private static final String[] EXCLUDE_PACKAGES = {"io.github.opencubicchunks", ModInfo.packageName};
+    private static final String[] EXCLUDE_PACKAGES = {
+            "net.minecraft",
+            "net.minecraftforge",
+            "io.github.opencubicchunks",
+            ModInfo.packageName
+    };
 
     private final FileWriter incompatibilityWriter;
 
