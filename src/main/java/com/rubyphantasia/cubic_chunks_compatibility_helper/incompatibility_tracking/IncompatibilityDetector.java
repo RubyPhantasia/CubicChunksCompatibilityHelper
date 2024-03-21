@@ -51,6 +51,16 @@ public class IncompatibilityDetector implements IClassTransformer {
         }
     }
 
+    public void writeLineWithSubPoints(String line, String subpoint1, String subpoint2) {
+        try {
+            this.writeLine(line);
+            this.writeLine("\t"+subpoint1);
+            this.writeLine("\t"+subpoint2);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void scanClass(String name, String transformedName, byte[] classData) {
         ClassReader classReader = new ClassReader(classData);
         IncompatibilityDetectorClassVisitor incompatibilityDetector = new IncompatibilityDetectorClassVisitor(name, transformedName, this);

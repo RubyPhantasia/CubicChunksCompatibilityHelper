@@ -51,10 +51,10 @@ public class IncompatibilityDetectorClassVisitor extends ClassVisitor {
         super.visit(version, access, obfuscatedName, signature, superName, interfaces);
         this.obfuscatedName = obfuscatedName;
         if (superName.startsWith("net/minecraft/world/gen/MapGen")) {
-            incompatibilityDetector.writeLine("Found class that extends a net/minecraft/world/gen/MapGen* class: "+this);
+            incompatibilityDetector.writeLine("Found class that extends a net/minecraft/world/gen/MapGen* class:\n\t"+this);
         }
         if (arrayContainsString(interfaces, "net/minecraftforge/fml/common/IWorldGenerator")) {
-            incompatibilityDetector.writeLine("Found class that implements net/minecraftforge/fml/common/IWorldGenerator: "+this);
+            incompatibilityDetector.writeLine("Found class that implements net/minecraftforge/fml/common/IWorldGenerator:\n\t"+this);
         }
     }
 
@@ -63,7 +63,8 @@ public class IncompatibilityDetectorClassVisitor extends ClassVisitor {
         MethodVisitor methodVisitor = new IncompatibilityDetectorMethodVisitor(this, name, desc, signature, incompatibilityDetector);
         for (String concerningType: CONCERNING_PARAMETER_TYPES) {
             if (desc.contains(concerningType)) {
-                incompatibilityDetector.writeLine("Found method that takes \""+concerningType+"\" as an argument: "+methodVisitor+" in "+this);
+                incompatibilityDetector.writeLineWithSubPoints("Found method that takes an instance of \""+concerningType+"\" as an argument:",
+                        ""+methodVisitor, "in "+this);
             }
         }
         return methodVisitor;
@@ -71,6 +72,6 @@ public class IncompatibilityDetectorClassVisitor extends ClassVisitor {
 
     @Override
     public String toString() {
-        return name+"(aka "+transformedName+" or "+obfuscatedName+")";
+        return name;
     }
 }

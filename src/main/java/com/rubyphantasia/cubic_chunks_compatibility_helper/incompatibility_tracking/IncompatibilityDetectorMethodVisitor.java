@@ -38,9 +38,9 @@ public class IncompatibilityDetectorMethodVisitor extends MethodVisitor {
         super.visitMethodInsn(opcode, owner, name, desc, itf);
         if (owner.equals("net/minecraft/util/math/BlockPos")) {
             if (name.equals("func_177969_a") && desc.equals("(J)Lnet/minecraft/util/math/BlockPos;")) {
-                incompatibilityDetector.writeLine("Found method using BlockPos.fromLong: " + this + " in " + ownerClass);
+                incompatibilityDetector.writeLineWithSubPoints("Found method using BlockPos.fromLong:", ""+this, "in " + ownerClass);
             } else if (name.equals("func_177986_g") && desc.equals("()J")) {
-                incompatibilityDetector.writeLine("Found method using BlockPos.toLong: "+this+" in "+ownerClass);
+                incompatibilityDetector.writeLineWithSubPoints("Found method using BlockPos.toLong:", ""+this,"in "+ownerClass);
             }
         }
     }
