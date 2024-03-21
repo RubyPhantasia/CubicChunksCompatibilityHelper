@@ -20,10 +20,14 @@ import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 import javax.annotation.Nullable;
 import java.util.Map;
 
+@IFMLLoadingPlugin.TransformerExclusions({ModInfo.packageName+".incompatibility_tracking"})
 public class CubicChunksHelperCoreMod implements IFMLLoadingPlugin {
     @Override
     public String[] getASMTransformerClass() {
-        String[] asmTransformerClasses = new String[] {ModInfo.packageName+".config.ConfigEnabledModulesGenerator"};
+        String[] asmTransformerClasses = new String[] {
+                ModInfo.packageName+".config.ConfigEnabledModulesGenerator",
+                ModInfo.packageName+".incompatibility_tracking.IncompatibilityDetector"
+        };
         return asmTransformerClasses;
     }
 
