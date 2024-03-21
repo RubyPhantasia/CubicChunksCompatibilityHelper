@@ -19,6 +19,13 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 public class IncompatibilityDetectorClassVisitor extends ClassVisitor {
+    private static final String[] CONCERNING_PARAMETER_TYPES = {
+            "net/minecraft/world/gen/IChunkGenerator",
+            "net/minecraft/world/chunk/IChunkProvider",
+            "net/minecraft/world/chunk/ChunkPrimer",
+            "net/minecraftforge/event/terraingen/DecorateBiomeEvent",
+            "net/minecraftforge/event/terraingen/DecorateBiomeEvent$Decorate"
+    };
     public final String name;
     public final String transformedName;
     private String obfuscatedName;
@@ -30,9 +37,9 @@ public class IncompatibilityDetectorClassVisitor extends ClassVisitor {
         this.incompatibilityDetector = incompatibilityDetector;
     }
 
-    private boolean containsInterface(String interfaceToCheck, String[] interfaces) {
-        for (String intface : interfaces) {
-            if (interfaceToCheck.equals(intface)) {
+    private boolean arrayContainsString(String[] arr, String str) {
+        for (String arrStr : arr) {
+            if (str.equals(arrStr)) {
                 return true;
             }
         }
@@ -46,14 +53,20 @@ public class IncompatibilityDetectorClassVisitor extends ClassVisitor {
         if (superName.startsWith("net/minecraft/world/gen/MapGen")) {
             incompatibilityDetector.writeLine("Found class that extends a net/minecraft/world/gen/MapGen* class: "+this);
         }
-        if (containsInterface("net/minecraftforge/fml/common/IWorldGenerator", interfaces)) {
+        if (arrayContainsString(interfaces, "net/minecraftforge/fml/common/IWorldGenerator")) {
             incompatibilityDetector.writeLine("Found class that implements net/minecraftforge/fml/common/IWorldGenerator: "+this);
         }
     }
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        return new IncompatibilityDetectorMethodVisitor(this, name, desc, signature, incompatibilityDetector);
+        MethodVisitor methodVisitor = new IncompatibilityDetectorMethodVisitor(this, name, desc, signature, incompatibilityDetector);
+        for (String concerningType: CONCERNING_PARAMETER_TYPES) {
+            if (desc.contains(concerningType)) {
+                incompatibilityDetector.writeLine("Found method that takes \""+concerningType+"\" as an argument: "+methodVisitor+" in "+this);
+            }
+        }
+        return methodVisitor;
     }
 
     @Override
