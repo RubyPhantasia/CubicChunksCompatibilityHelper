@@ -19,13 +19,13 @@ import com.rubyphantasia.cubic_chunks_compatibility_helper.ModLogger;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.config.ConfigGeneral;
 import net.minecraft.launchwrapper.IClassTransformer;
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.LocalVariableNode;
-import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 
 public class IncompatibilityDetector implements IClassTransformer {
@@ -37,6 +37,16 @@ public class IncompatibilityDetector implements IClassTransformer {
             "io.netty",
             ModInfo.packageName
     };
+
+    private static final String[] CONCERNING_PARAMETER_TYPES_RAW = {
+            "net/minecraft/world/gen/IChunkGenerator",
+            "net/minecraft/world/chunk/IChunkProvider",
+            "net/minecraft/world/chunk/ChunkPrimer",
+            "net/minecraftforge/event/terraingen/DecorateBiomeEvent",
+            "net/minecraftforge/event/terraingen/DecorateBiomeEvent$Decorate"
+    };
+
+    private static final String[] CONCERNING_PARAMETER_TYPES;
 
     private final FileWriter incompatibilityWriter;
 
@@ -57,48 +67,106 @@ public class IncompatibilityDetector implements IClassTransformer {
         }
     }
 
-    public void writeLineWithSubPoints(String line, String subpoint1, String subpoint2) {
+    public void writeLineWithSubPoints(String line, String ...subpoints) {
         try {
             this.writeLine(line);
-            this.writeLine("\t"+subpoint1);
-            this.writeLine("\t"+subpoint2);
+            for (String subpoint : subpoints) {
+                this.writeLine("\t"+subpoint);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void checkLocalVariables(String className, MethodNode methodNode) {
+    private boolean listContainsString(List<String> list, String str) {
+        for (String arrStr : list) {
+            if (str.equals(arrStr)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String computeMethodLabel(MethodNode methodNode) {
+        return methodNode.name+methodNode.desc;
+    }
+
+    private void inspectLocalVariables(String className, MethodNode methodNode) {
+        String methodLabel = computeMethodLabel(methodNode);
+        String inMethod = "In method: "+methodLabel;
+        String inClass = "In class: " + className;
         if (methodNode.localVariables != null) {
             for (LocalVariableNode variableNode : methodNode.localVariables) {
                 String lowerName = variableNode.name.toLowerCase(Locale.ROOT);
+                String variableNameOutput = "Variable/parameter name: " + variableNode.name;
                 if (lowerName.equals("chunkx")) {
-                    writeLineWithSubPoints("Found method with local variable/parameter named \"chunkx\":", methodNode.name, "in " + className);
+                    writeLineWithSubPoints("Found method with local variable/parameter named \"chunkx\":",
+                            variableNameOutput, inMethod, inClass);
                 } else if (lowerName.equals("chunkz")) {
-                    writeLineWithSubPoints("Found method with local variable/parameter named \"chunkz\":", methodNode.name, "in " + className);
+                    writeLineWithSubPoints("Found method with local variable/parameter named \"chunkz\":",
+                            variableNameOutput, inMethod, inClass);
                 } else if (lowerName.startsWith("chunk")) {
-                    writeLineWithSubPoints("Found local variable/parameter name starting with \"chunk\", in method:", methodNode.name, "in " + className);
+                    writeLineWithSubPoints("Found local variable/parameter name starting with \"chunk\", in method:",
+                            variableNameOutput, inMethod, inClass);
                 } else if (lowerName.contains("chunk")) {
-                    writeLineWithSubPoints("Found local variable/parameter name which includes the string \"chunk\", in method:", methodNode.name, "in " + className);
+                    writeLineWithSubPoints("Found local variable/parameter name which includes the string \"chunk\", in method:",
+                            variableNameOutput, inMethod, inClass);
+                }
+
+                for (String concerningType : CONCERNING_PARAMETER_TYPES) {
+                    if (variableNode.desc.equals(concerningType)) {
+                        writeLineWithSubPoints("Found method with a local variable/parameter of type \""+concerningType+"\":",
+                                variableNameOutput, inMethod, inClass);
+                    }
                 }
             }
         }
     }
 
-    private void checkMethods(ClassNode classNode) {
+    private void inspectInstructions(String className, MethodNode methodNode) {
+        String methodLabel = computeMethodLabel(methodNode);
+        for (ListIterator<AbstractInsnNode> iterator = methodNode.instructions.iterator(); iterator.hasNext(); ) {
+            AbstractInsnNode instruction = iterator.next();
+            if (instruction.getType() == AbstractInsnNode.METHOD_INSN) {
+                MethodInsnNode castInstruction = (MethodInsnNode) instruction;
+                String fullSignature = castInstruction.name+castInstruction.desc;
+                if (castInstruction.owner.equals("net/minecraft/util/math/BlockPos")) {
+                    if (fullSignature.equals("func_177969_a(J)Lnet/minecraft/util/math/BlockPos;")) {
+                        writeLineWithSubPoints("Found method using BlockPos.fromLong:", methodLabel, "In "+className);
+                    } else if (fullSignature.equals("func_177986_g()J")) {
+                        writeLineWithSubPoints("Found method using BlockPos.toLong:", methodLabel, "In "+className);
+                    }
+                }
+            }
+        }
+    }
+
+    private void inspectMethods(ClassNode classNode) {
         if (classNode.methods != null) {
             for (MethodNode methodNode : classNode.methods) {
-                checkLocalVariables(classNode.name, methodNode);
+                inspectLocalVariables(classNode.name, methodNode);
+                inspectInstructions(classNode.name, methodNode);
             }
+        }
+    }
+
+    private void inspectInheritance(ClassNode classNode) {
+        if (classNode.superName.startsWith("net/minecraft/world/gen/MapGen")) {
+            writeLineWithSubPoints("Found class that extends a net/minecraft/world/gen/MapGen* class:", classNode.name);
+        }
+        if (listContainsString(classNode.interfaces, "net/minecraftforge/fml/common/IWorldGenerator")) {
+            writeLineWithSubPoints("Found class that implements net/minecraftforge/fml/common/IWorldGenerator:", classNode.name);
         }
     }
 
     private void scanClass(String name, String transformedName, byte[] classData) {
         ClassReader classReader = new ClassReader(classData);
-        IncompatibilityDetectorClassVisitor incompatibilityDetector = new IncompatibilityDetectorClassVisitor(name, transformedName, this);
-        classReader.accept(incompatibilityDetector, 0);
         ClassNode classNode = new ClassNode();
         classReader.accept(classNode, 0);
-        checkMethods(classNode);
+
+        inspectInheritance(classNode);
+        inspectMethods(classNode);
+
         try {
             incompatibilityWriter.flush();
         } catch (Exception e) {
@@ -120,14 +188,19 @@ public class IncompatibilityDetector implements IClassTransformer {
         //  check the config class when the config class is being loaded.
         if (shouldParse(name) && ConfigGeneral.scanClassesForIncompatibilities){
             if (basicClass != null) {
-//            if (!name.contains("ModLogger")) {
-//                ModLogger.debug("Scanning class " + name + " for common CubicChunks incompatibilities.");
-//            }
                 scanClass(name, transformedName, basicClass);
             } else {
                 ModLogger.debug("Encountered class with null data: " + name);
             }
         }
         return basicClass;
+    }
+
+    static {
+//        CONCERNING_PARAMETER_TYPES = (String[]) Arrays.stream(CONCERNING_PARAMETER_TYPES_RAW).map(raw -> "L"+raw+";").toArray();
+        CONCERNING_PARAMETER_TYPES = new String[CONCERNING_PARAMETER_TYPES_RAW.length];
+        for (int i = 0; i < CONCERNING_PARAMETER_TYPES_RAW.length; i++) {
+            CONCERNING_PARAMETER_TYPES[i] = "L"+CONCERNING_PARAMETER_TYPES_RAW[i]+";";
+        }
     }
 }
