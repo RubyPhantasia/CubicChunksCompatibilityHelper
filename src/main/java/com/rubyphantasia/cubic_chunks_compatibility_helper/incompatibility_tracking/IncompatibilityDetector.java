@@ -19,9 +19,14 @@ import com.rubyphantasia.cubic_chunks_compatibility_helper.ModLogger;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.config.ConfigGeneral;
 import net.minecraft.launchwrapper.IClassTransformer;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.LocalVariableNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Locale;
 
 public class IncompatibilityDetector implements IClassTransformer {
 
@@ -29,6 +34,7 @@ public class IncompatibilityDetector implements IClassTransformer {
             "net.minecraft",
             "net.minecraftforge",
             "io.github.opencubicchunks",
+            "io.netty",
             ModInfo.packageName
     };
 
@@ -61,10 +67,38 @@ public class IncompatibilityDetector implements IClassTransformer {
         }
     }
 
+    private void checkLocalVariables(String className, MethodNode methodNode) {
+        if (methodNode.localVariables != null) {
+            for (LocalVariableNode variableNode : methodNode.localVariables) {
+                String lowerName = variableNode.name.toLowerCase(Locale.ROOT);
+                if (lowerName.equals("chunkx")) {
+                    writeLineWithSubPoints("Found method with local variable/parameter named \"chunkx\":", methodNode.name, "in " + className);
+                } else if (lowerName.equals("chunkz")) {
+                    writeLineWithSubPoints("Found method with local variable/parameter named \"chunkz\":", methodNode.name, "in " + className);
+                } else if (lowerName.startsWith("chunk")) {
+                    writeLineWithSubPoints("Found local variable/parameter name starting with \"chunk\", in method:", methodNode.name, "in " + className);
+                } else if (lowerName.contains("chunk")) {
+                    writeLineWithSubPoints("Found local variable/parameter name which includes the string \"chunk\", in method:", methodNode.name, "in " + className);
+                }
+            }
+        }
+    }
+
+    private void checkMethods(ClassNode classNode) {
+        if (classNode.methods != null) {
+            for (MethodNode methodNode : classNode.methods) {
+                checkLocalVariables(classNode.name, methodNode);
+            }
+        }
+    }
+
     private void scanClass(String name, String transformedName, byte[] classData) {
         ClassReader classReader = new ClassReader(classData);
         IncompatibilityDetectorClassVisitor incompatibilityDetector = new IncompatibilityDetectorClassVisitor(name, transformedName, this);
         classReader.accept(incompatibilityDetector, 0);
+        ClassNode classNode = new ClassNode();
+        classReader.accept(classNode, 0);
+        checkMethods(classNode);
         try {
             incompatibilityWriter.flush();
         } catch (Exception e) {
