@@ -33,7 +33,15 @@ public class IncompatibilityDetector implements IClassTransformer {
             "net.minecraft",
             "net.minecraftforge",
             "io.github.opencubicchunks",
+            "cubicchunks.regionlib",
+            "com.flowpowered.noise",
+            "com.jcraft",
+            "com.sun",
+            "gnu.trove",
             "io.netty",
+            "it.unimi.dsi.fastutil",
+            "org.slf4j",
+            "org.spongepowered",
             ModInfo.packageName
     };
 
@@ -50,7 +58,6 @@ public class IncompatibilityDetector implements IClassTransformer {
             "net/minecraft/world/chunk/ChunkPrimer",
             "net/minecraftforge/event/terraingen/DecorateBiomeEvent",
             "net/minecraftforge/event/terraingen/DecorateBiomeEvent$Decorate",
-            "net.minecraft.world.World func_72800_K()I"
     };
 
     private static final String[] CONCERNING_VARIABLE_TYPES;
@@ -152,7 +159,7 @@ public class IncompatibilityDetector implements IClassTransformer {
     private void inspectIntegralConstant(long constant, String className, String methodLabel) {
         for (long concerningConstant : CONCERNING_CONSTANTS) {
             if (constant == concerningConstant) {
-                writeLineWithSubPoints("Found method using concerning integral constant "+constant+":",
+                writeLineWithSubPoints("Found method using integral constant "+constant+":",
                         "Method: "+methodLabel, "In class: "+className);
                 break;
             }
@@ -171,7 +178,7 @@ public class IncompatibilityDetector implements IClassTransformer {
                         if (castInstruction.owner.equals(methodsPackage.owner)) {
                             for (MethodIdentifier method : methodsPackage.methods) {
                                 if (fullSignature.equals(method.obfSignature)) {
-                                    writeLineWithSubPoints("Found method using " + methodsPackage.owner + "#" + method.deobfName + ":",
+                                    writeLineWithSubPoints("Found method using " + methodsPackage.owner + "#" + method.deobfName + " (obfuscated: "+method.obfSignature+"):",
                                             "In method: " + methodLabel, "In class: " + className);
                                 }
                             }
