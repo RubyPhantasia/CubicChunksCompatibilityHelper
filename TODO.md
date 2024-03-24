@@ -38,7 +38,13 @@
 * Determine if the roundabout (I_SomeMixinInterface ((Object) targetInstance)) cast is necessary for using interfaces which are added to mixin-targeted classes, and suppress the warnings if necessary.
 * Change mixins to use ModifyExpressionValue and other MixinExtras injectors where needed.
 * [DONE] Add list of common Cubic Chunks incompatibilities I've seen.
-* Add way for my mod to automatically detect common incompatibilities in other mods and record them in a file.
+* [DONE] Add way for my mod to automatically detect common incompatibilities in other mods and record them in a file.
+  * Add detection for hardcoded constants (127, 128, 255, 256).
+  * Add logic to trace numerical variables, and identify any that are assigned to/from known y-value variables
+    * E.g. variables that are used to initialize a BlockPos's y-coordinate, or which are added to/subtracted from a BlockPos's y-coordinate.
+  * Detect functions that only take x & z parameters as inputs.
+  * Detect hardcoded or limited range y-values used to initialize positions, or passed to methods.
+* Add mechanism to automatically patch certain common incompatibilities.
 * [MOSTLY DONE] Add license text to header of all java files.
   * [DONE] Add template to generate Java classes with the license text in the header.
   * Add guide on how to set up such a template.
