@@ -20,6 +20,10 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.function.Consumer;
+
 public class Miscellaneous {
     public static final String NBT_BLOCK_POS_X_KEY = "x";
     public static final String NBT_BLOCK_POS_Y_KEY = "y";
@@ -84,5 +88,38 @@ public class Miscellaneous {
             approximateMappedYValue -= (int)(Mixin_BlockPos_Accessor.getY_MASK()+1);
         }
         return new BlockPos(origBlockPos.getX(), approximateMappedYValue, origBlockPos.getZ());
+    }
+
+    public static boolean listContainsString(List<String> list, String str) {
+        for (String arrStr : list) {
+            if (str.equals(arrStr)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Nullable
+    public static String findPrefixInArray(String[] arr, String str) {
+        for (String arrStr : arr) {
+            if (str.startsWith(arrStr)) {
+                return arrStr;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Calls operation on each stringFragment that is in containingString
+     * @param stringFragments  Array of string fragments
+     * @param containingString String that may contain string fragments
+     * @param operation        Operation to execute for each fragment found int containingString
+     */
+    public static void forEachContainedFragmentInArray(String[] stringFragments, String containingString, Consumer<String> operation) {
+        for (String stringFragment : stringFragments) {
+            if (containingString.contains(stringFragment)) {
+                operation.accept(stringFragment);
+            }
+        }
     }
 }

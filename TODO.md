@@ -39,11 +39,14 @@
 * Change mixins to use ModifyExpressionValue and other MixinExtras injectors where needed.
 * [DONE] Add list of common Cubic Chunks incompatibilities I've seen.
 * [DONE] Add way for my mod to automatically detect common incompatibilities in other mods and record them in a file.
-  * Add detection for hardcoded constants (127, 128, 255, 256).
+  * [DONE] Add detection for hardcoded constants (127, 128, 255, 256).
   * Add logic to trace numerical variables, and identify any that are assigned to/from known y-value variables
     * E.g. variables that are used to initialize a BlockPos's y-coordinate, or which are added to/subtracted from a BlockPos's y-coordinate.
   * Detect functions that only take x & z parameters as inputs.
   * Detect hardcoded or limited range y-values used to initialize positions, or passed to methods.
+  * Separate different incompatibilities into different files
+  * Maybe categorize incompatibilities by how likely they are to be an issue
+    * For example, instances of constants like 255, 127, etc. are less likely to be a problem if they appear in a rendering method, as they may be used for computing a color, rather than comparing to a y-value.
 * Add mechanism to automatically patch certain common incompatibilities.
 * [MOSTLY DONE] Add license text to header of all java files.
   * [DONE] Add template to generate Java classes with the license text in the header.
@@ -56,6 +59,7 @@
   * I.e. loading into a world with specific config settings, placing blocks, waiting X ticks, then checking that certain blocks are at specified positions.
 * When logging if a module was skipped, specify why - due to a config setting, or because required mods were not available. 
 * Improve module summaries in ConfigEnabledModules.
+* MAJOR: Require that the client and server have the same modules enabled.
 
 ## Mod-Specific
 

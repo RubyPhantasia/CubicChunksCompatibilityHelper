@@ -17,15 +17,14 @@ package com.rubyphantasia.cubic_chunks_compatibility_helper.incompatibility_trac
 import com.rubyphantasia.cubic_chunks_compatibility_helper.ModInfo;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.ModLogger;
 import com.rubyphantasia.cubic_chunks_compatibility_helper.config.ConfigGeneral;
+import com.rubyphantasia.cubic_chunks_compatibility_helper.util.Miscellaneous;
 import net.minecraft.launchwrapper.IClassTransformer;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Locale;
+import java.util.*;
 
 public class IncompatibilityDetector implements IClassTransformer {
 
@@ -53,6 +52,7 @@ public class IncompatibilityDetector implements IClassTransformer {
     };
 
     private static final String[] CONCERNING_VARIABLE_TYPES_RAW = {
+            // Various worldgen methods that work directly with chunks
             "net/minecraft/world/gen/IChunkGenerator",
             "net/minecraft/world/chunk/IChunkProvider",
             "net/minecraft/world/chunk/ChunkPrimer",
@@ -61,6 +61,14 @@ public class IncompatibilityDetector implements IClassTransformer {
     };
 
     private static final String[] CONCERNING_VARIABLE_TYPES;
+
+    private static final Set<String> CONCERNING_VARIABLE_NAMES = new HashSet<>();
+    private static final String[] CONCERNING_VARIABLE_NAME_STARTS = {
+            "chunk",
+    };
+    private static final String[] CONCERNING_VARIABLE_NAME_FRAGMENTS = {
+            "chunk"
+    };
 
     private static final ConcerningMethodsPackage[] CONCERNING_METHODS_PACKAGES = {
             new ConcerningMethodsPackage("net/minecraft/util/math/BlockPos", new MethodIdentifier[] {
@@ -72,7 +80,8 @@ public class IncompatibilityDetector implements IClassTransformer {
             new ConcerningMethodsPackage("net/minecraft/world/World", new MethodIdentifier[] {
                     // While this should yield the correct value in a cubic world, it might be used in a loop
                     //  that iterates over y-values in the range [0, getHeight()), which would be a problem in cubic worlds.
-                    new MethodIdentifier("getHeight", "func_72800_K()I")
+                    new MethodIdentifier("getHeight", "func_72800_K()I"),
+                    new MethodIdentifier("getTopSolidOrLiquidBlock", "func_175672_r(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/util/math/BlockPos;")
             })
     };
 
@@ -111,39 +120,32 @@ public class IncompatibilityDetector implements IClassTransformer {
         }
     }
 
-    private boolean listContainsString(List<String> list, String str) {
-        for (String arrStr : list) {
-            if (str.equals(arrStr)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private String computeMethodLabel(MethodNode methodNode) {
         return methodNode.name+methodNode.desc;
     }
 
     private void inspectLocalVariables(String className, MethodNode methodNode) {
         String methodLabel = computeMethodLabel(methodNode);
-        String inMethod = "In method: "+methodLabel;
-        String inClass = "In class: " + className;
+        final String inMethod = "In method: "+methodLabel;
+        final String inClass = "In class: " + className;
         if (methodNode.localVariables != null) {
             for (LocalVariableNode variableNode : methodNode.localVariables) {
-                String lowerName = variableNode.name.toLowerCase(Locale.ROOT);
-                String variableNameOutput = "Variable/parameter name: " + variableNode.name;
-                if (lowerName.equals("chunkx")) {
-                    writeLineWithSubPoints("Found method with local variable/parameter named \"chunkx\":",
-                            variableNameOutput, inMethod, inClass);
-                } else if (lowerName.equals("chunkz")) {
-                    writeLineWithSubPoints("Found method with local variable/parameter named \"chunkz\":",
-                            variableNameOutput, inMethod, inClass);
-                } else if (lowerName.startsWith("chunk")) {
-                    writeLineWithSubPoints("Found local variable/parameter name starting with \"chunk\", in method:",
-                            variableNameOutput, inMethod, inClass);
-                } else if (lowerName.contains("chunk")) {
-                    writeLineWithSubPoints("Found local variable/parameter name which includes the string \"chunk\", in method:",
-                            variableNameOutput, inMethod, inClass);
+                // Scan variable names, start with most specific (exact name, then prefixes, then fragments
+                final String lowerName = variableNode.name.toLowerCase(Locale.ROOT);
+                final String variableNameOutput = "Variable/parameter name: " + variableNode.name;
+                if (CONCERNING_VARIABLE_NAMES.contains(lowerName)) {
+                    writeLineWithSubPoints("Found method with local variable/parameter named \""+variableNode.name+"\":",
+                            inMethod, inClass);
+                } else {
+                    final String prefix = Miscellaneous.findPrefixInArray(CONCERNING_VARIABLE_NAME_STARTS, lowerName);
+                    if (prefix != null) {
+                        writeLineWithSubPoints("Found local variable/parameter name starting with \""+prefix+"\", in method:",
+                                variableNameOutput, inMethod, inClass);
+                    } else {
+                        Miscellaneous.forEachContainedFragmentInArray(CONCERNING_VARIABLE_NAME_FRAGMENTS, lowerName, str ->
+                                writeLineWithSubPoints("Found local variable/parameter name starting with \"chunk\", in method:",
+                                        variableNameOutput, inMethod, inClass));
+                    }
                 }
 
                 for (String concerningType : CONCERNING_VARIABLE_TYPES) {
@@ -218,7 +220,7 @@ public class IncompatibilityDetector implements IClassTransformer {
         if (classNode.superName.startsWith("net/minecraft/world/gen/MapGen")) {
             writeLineWithSubPoints("Found class that extends a net/minecraft/world/gen/MapGen* class:", classNode.name);
         }
-        if (listContainsString(classNode.interfaces, "net/minecraftforge/fml/common/IWorldGenerator")) {
+        if (Miscellaneous.listContainsString(classNode.interfaces, "net/minecraftforge/fml/common/IWorldGenerator")) {
             writeLineWithSubPoints("Found class that implements net/minecraftforge/fml/common/IWorldGenerator:", classNode.name);
         }
     }
@@ -272,11 +274,13 @@ public class IncompatibilityDetector implements IClassTransformer {
     }
 
     static {
-//        CONCERNING_PARAMETER_TYPES = (String[]) Arrays.stream(CONCERNING_PARAMETER_TYPES_RAW).map(raw -> "L"+raw+";").toArray();
         CONCERNING_VARIABLE_TYPES = new String[CONCERNING_VARIABLE_TYPES_RAW.length];
         for (int i = 0; i < CONCERNING_VARIABLE_TYPES_RAW.length; i++) {
             CONCERNING_VARIABLE_TYPES[i] = "L"+ CONCERNING_VARIABLE_TYPES_RAW[i]+";";
         }
+
+        CONCERNING_VARIABLE_NAMES.add("chunkx");
+        CONCERNING_VARIABLE_NAMES.add("chunkz");
     }
 
     private static class ConcerningMethodsPackage {
