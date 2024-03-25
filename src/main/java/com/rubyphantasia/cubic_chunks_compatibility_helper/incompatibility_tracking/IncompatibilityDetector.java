@@ -34,13 +34,16 @@ public class IncompatibilityDetector implements IClassTransformer {
             "io.github.opencubicchunks",
             "cubicchunks.regionlib",
             "com.flowpowered.noise",
+            "com.google",
             "com.jcraft",
+            "com.mojang",
             "com.sun",
             "gnu.trove",
             "io.netty",
             "it.unimi.dsi.fastutil",
             "org.slf4j",
             "org.spongepowered",
+            "paulscode.sound",
             ModInfo.packageName
     };
 
@@ -268,7 +271,7 @@ public class IncompatibilityDetector implements IClassTransformer {
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
         // Check config after checking if the class should parse, otherwise we get ClassCircularlityErrors b/c we
         //  check the config class when the config class is being loaded.
-        if (shouldParse(name) && ConfigGeneral.scanClassesForIncompatibilities){
+        if (shouldParse(transformedName) && ConfigGeneral.scanClassesForIncompatibilities){
             if (basicClass != null) {
                 scanClass(name, transformedName, basicClass);
             } else {
