@@ -58,6 +58,7 @@ public class IncompatibilityDetector implements IClassTransformer {
             "net/minecraft/world/chunk/ChunkPrimer",
             "net/minecraftforge/event/terraingen/DecorateBiomeEvent",
             "net/minecraftforge/event/terraingen/DecorateBiomeEvent$Decorate",
+            "net/minecraft/util/math/ChunkPos",
     };
 
     private static final String[] CONCERNING_VARIABLE_TYPES;
@@ -82,7 +83,10 @@ public class IncompatibilityDetector implements IClassTransformer {
                     //  that iterates over y-values in the range [0, getHeight()), which would be a problem in cubic worlds.
                     new MethodIdentifier("getHeight", "func_72800_K()I"),
                     new MethodIdentifier("getTopSolidOrLiquidBlock", "func_175672_r(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/util/math/BlockPos;")
-            })
+            }),
+            new ConcerningMethodsPackage("net/minecraft/util/math/ChunkPos", new MethodIdentifier[]{
+                    new MethodIdentifier("getBlock", "func_180331_a(III)Lnet/minecraft/util/math/BlockPos;"),
+            }),
     };
 
     // Words/phrases that might be associated with incompatible behavior
@@ -115,6 +119,7 @@ public class IncompatibilityDetector implements IClassTransformer {
             for (String subpoint : subpoints) {
                 this.writeLine("\t"+subpoint);
             }
+            this.writeLine("");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -276,7 +281,7 @@ public class IncompatibilityDetector implements IClassTransformer {
     static {
         CONCERNING_VARIABLE_TYPES = new String[CONCERNING_VARIABLE_TYPES_RAW.length];
         for (int i = 0; i < CONCERNING_VARIABLE_TYPES_RAW.length; i++) {
-            CONCERNING_VARIABLE_TYPES[i] = "L"+ CONCERNING_VARIABLE_TYPES_RAW[i]+";";
+            CONCERNING_VARIABLE_TYPES[i] = "L"+ Miscellaneous.convertClassNameToSlashFormat(CONCERNING_VARIABLE_TYPES_RAW[i])+";";
         }
 
         CONCERNING_VARIABLE_NAMES.add("chunkx");
@@ -288,7 +293,7 @@ public class IncompatibilityDetector implements IClassTransformer {
         private final MethodIdentifier[] methods;
 
         public ConcerningMethodsPackage(String owner, MethodIdentifier[] methods) {
-            this.owner = owner;
+            this.owner = Miscellaneous.convertClassNameToSlashFormat(owner);
             this.methods = methods;
         }
     }

@@ -122,4 +122,8 @@ public class Miscellaneous {
             }
         }
     }
+
+    public static String convertClassNameToSlashFormat(String classNameRaw) {
+        return classNameRaw.replace(".", "/");
+    }
 }
